@@ -1,3 +1,0 @@
-Mongo DB API:
-	Public Key: kfhfqqam
-	Private Key: 6784d33d-1964-4053-bfe1-ad33e7990a96
