@@ -1,18 +1,30 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import LoginPage from '../views/LoginPage.vue'
-import RegisterPage from '../views/RegisterPage.vue'
+import LoginView from '../views/LoginView.vue'
+import RegisterView from '../views/RegisterView.vue'
+import ForgotPasswordView from '../views/ForgotPasswordView.vue'
+import ResetPasswordView from '../views/ResetPasswordView.vue'
 
 const routes = [
   {
     path: '/login',
     name: 'login',
-    component: LoginPage
+    component: LoginView
   },
   {
     path: '/register',
     name: 'register',
-    component: RegisterPage
-  }
+    component: RegisterView
+  },
+  {
+    path: '/forgotPassword',
+    name: 'forgotPassword',
+    component: ForgotPasswordView
+  },
+  {
+    path: '/resetPassword',
+    name: 'resetPassword',
+    component: ResetPasswordView
+  },
 ]
 
 const router = createRouter({

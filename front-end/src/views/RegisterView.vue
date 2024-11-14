@@ -1,28 +1,31 @@
 <template>
   <div class="body">
     <div class="wrapper">
-      <form id="loginForm" @submit.prevent="handleLoginForm">
-        <h1>Login</h1>
+      <form id="registerForm" @submit.prevent="handleRegisterForm">
+        <h1>Register</h1>
+
         <div class="inputBox">
-          <input type="text" placeholder="Email" v-model="email" />
+          <input type="text" id="email" placeholder="Email" v-model="email" />
         </div>
         <div class="inputBox">
-          <input
-            :type="passwordVisible ? 'text' : 'password'"
-            placeholder="Password"
-            id="password"
-            v-model="password"
-          />
-          <i
-            :class="
-              passwordVisible ? 'bx bx-show eye-icon' : 'bx bx-hide eye-icon'
-            "
-            @click="showPassword"
-          ></i>
+          <input type="text" id="nickname" placeholder="Nickname" v-model="nickname" />
         </div>
-        <button type="submit" class="button">Login</button>
+
+        <div class="inputBox">
+          <input :type="passwordVisible ? 'text' : 'password'" id="password" placeholder="Create Password"
+            v-model="password" />
+        </div>
+        <div class="inputBox">
+          <input :type="passwordVisible ? 'text' : 'password'" id="comfirmPassword" placeholder="Comfirm Password"
+            v-model="comfirmPassword" />
+          <i :class="passwordVisible ? 'bx bx-show eye-icon' : 'bx bx-hide eye-icon'
+            " @click="showPassword"></i>
+        </div>
+
+        <button type="submit" class="button">Register</button>
+
         <div class="registerLink">
-          <p>Don't have an account? <a href="register">Register</a></p>
+          <p>Already have an account? <a href="login">Login</a></p>
         </div>
       </form>
     </div>
@@ -31,20 +34,29 @@
 
 <script>
 export default {
-  name: "LoginPage",
+  name: "RegisterPage",
   data() {
     return {
       email: "",
       password: "",
+      comfirmPassword: "",
+      nickname: "",
       passwordVisible: false,
     };
   },
   methods: {
-    handleLoginForm() {
+    handleRegisterForm() {
+      if (this.password != this.comfirmPassword) {
+        alert("密碼不一致!");
+        return;
+      }
+
       const formData = {
         email: this.email,
         password: this.password,
+        name: this.name,
       };
+
       console.log(formData);
     },
     showPassword() {
@@ -53,6 +65,7 @@ export default {
   },
 };
 </script>
+
 
 <style scoped>
 * {
@@ -113,7 +126,7 @@ export default {
 .inputBox i {
   font-size: 20px;
   position: absolute;
-  top: 39.5%;
+  top: 50%;
   right: 55px;
 }
 
