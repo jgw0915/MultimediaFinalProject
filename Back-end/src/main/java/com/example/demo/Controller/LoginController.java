@@ -8,6 +8,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 
 import com.example.demo.Model.User;
 import com.example.demo.Service.LoginService;
@@ -45,6 +46,17 @@ public class LoginController {
         } catch (Exception e) {
             logger.error("Error during login for email: {}, Error: {}", userEmail, e.getMessage(), e);
             return ResponseEntity.status(500).body("Internal server error");
+        }
+    }
+
+    @PostMapping("/register")
+    public ResponseEntity<String> register(@RequestParam String nickname, @RequestParam String password, @RequestParam String email) {
+        User user = loginService.getUserByEmail(email);
+        if (user != null) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Email already exists.");
+        } else {
+            loginService.saveUser(nickname, password, email);
+            return ResponseEntity.status(HttpStatus.OK).body("Register success.");
         }
     }
 

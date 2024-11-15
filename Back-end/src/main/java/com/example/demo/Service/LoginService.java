@@ -5,9 +5,13 @@ import org.springframework.stereotype.Service;
 
 import com.example.demo.Model.User;
 import com.example.demo.Repository.UserRepository;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Service
 public class LoginService {
+
+    private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
 
     private final UserRepository userRepository;
 
@@ -20,7 +24,15 @@ public class LoginService {
         return userRepository.findByEmail(email); // Query on the "_email" field
     }
 
-    public User saveUser(User user) {
-        return userRepository.save(user); // Saves a user to MongoDB
+    public void saveUser(String nickname, String password, String email) {
+        logger.info("Saving user: {}, {}, {}", nickname, email, password);
+
+        User user = new User();
+        user.setNickname(nickname);
+        user.setPassword(password); // Hash the password in production
+        user.setEmail(email);
+        userRepository.save(user);
+
+        logger.info("User saved successfully.");
     }
 }
