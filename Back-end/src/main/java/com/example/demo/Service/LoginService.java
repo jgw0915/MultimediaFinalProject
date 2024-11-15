@@ -1,12 +1,12 @@
 package com.example.demo.Service;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import com.example.demo.Model.User;
 import com.example.demo.Repository.UserRepository;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Service
 public class LoginService {
@@ -25,7 +25,7 @@ public class LoginService {
     }
 
     public void saveUser(String nickname, String password, String email) {
-        logger.info("Saving user: {}, {}, {}", nickname, email, password);
+        logger.info("Saving user: {}, email: {}, password: {}", nickname, email, password);
 
         User user = new User();
         user.setNickname(nickname);

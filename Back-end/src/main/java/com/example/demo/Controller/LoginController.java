@@ -3,12 +3,12 @@ package com.example.demo.Controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.http.HttpStatus;
 
 import com.example.demo.Model.User;
 import com.example.demo.Service.LoginService;
@@ -51,13 +51,49 @@ public class LoginController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestParam String nickname, @RequestParam String password, @RequestParam String email) {
-        User user = loginService.getUserByEmail(email);
-        if (user != null) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Email already exists.");
-        } else {
-            loginService.saveUser(nickname, password, email);
-            return ResponseEntity.status(HttpStatus.OK).body("Register success.");
+        try {
+            User user = loginService.getUserByEmail(email);
+            if (user != null) {
+                logger.warn("Email already exists: {}", email);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Error: Email already exists.");
+            } else {
+                loginService.saveUser(nickname, password, email);
+                logger.info("User registered successfully: {}", email);
+                return ResponseEntity.status(HttpStatus.OK).body("Register success.");
+            }
+        } catch (Exception e) {
+            logger.error("Error during registration for email: {}, Error: {}", email, e.getMessage(), e);
+            return ResponseEntity.status(500).body("Internal server error");
         }
+    }
+
+    @PostMapping("/forgetPassword")
+    public ResponseEntity<String> forgetPassword(@RequestParam String email) {
+        logger.info("Forget password request for email: {}", email);
+
+        try {
+            // Check if user exists
+            User user = loginService.getUserByEmail(email);
+            if (user == null) {
+                logger.warn("User not found for email: {}", email);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Error: Email not found.");
+            }
+
+            // Simulate sending a reset password email
+            sendResetPasswordEmail(email);
+
+            logger.info("Reset password email sent to: {}", email);
+            return ResponseEntity.ok("Reset password email sent successfully.");
+        } catch (Exception e) {
+            logger.error("Error during forgetPassword process for email: {}, Error: {}", email, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
+        }
+    }
+
+    private void sendResetPasswordEmail(String email) {
+        // Simulate sending an email (replace with actual email service logic)
+        logger.info("Simulating sending reset password email to: {}", email);
+        // You can use a real email service like JavaMailSender or third-party APIs such as SendGrid, Amazon SES, etc.
     }
 
     // Simulate password validation (use hashing like BCrypt in a real-world app)
