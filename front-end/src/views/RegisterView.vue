@@ -51,13 +51,31 @@ export default {
         return;
       }
 
-      const formData = {
-        email: this.email,
-        password: this.password,
-        name: this.name,
-      };
-
-      console.log(formData);
+      let url = '/api/register?nickname=' + this.nickname + "&password=" + this.password + "&email=" + this.email;
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text(); // 使用 text() 處理純文字響應
+        })
+        .then(data => {
+          console.log('response:', data);
+          if (data.includes("Register success")) {
+            alert("User register successfully!");
+            this.$router.push('/login');
+          } else {
+            console.error("failed:", data);
+          }
+        })
+        .catch(error => {
+          console.error('Error:', error);
+        });
     },
     showPassword() {
       this.passwordVisible = !this.passwordVisible;

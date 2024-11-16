@@ -34,12 +34,35 @@ export default {
   },
   methods: {
     handleLoginForm() {
-      const formData = {
-        email: this.email,
-        password: this.password,
-      };
-      console.log(formData);
+      let url = '/api/login?userEmail=' + this.email + "&password=" + this.password;
+      fetch(url, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text(); // 使用 text() 處理純文字響應
+        })
+        .then(data => {
+          console.log('Login response:', data);
+          // 根據響應內容進行處理
+          if (data.includes("Login successful")) {
+            alert("User logged in successfully!");
+            this.$router.push('/');
+          } else {
+            console.error("Login failed:", data);
+          }
+        })
+        .catch(error => {
+          console.error('Error during login:', error);
+          // 顯示錯誤訊息給用戶
+        });
     },
+
     showPassword() {
       this.passwordVisible = !this.passwordVisible;
     },
