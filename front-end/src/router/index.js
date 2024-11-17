@@ -8,6 +8,7 @@ import HomeView from '../views/HomeView.vue'
 import DrawingAreaView from '../views/DrawingAreaView.vue'
 import UserFeedbackView from '../views/UserFeedbackView.vue'
 import AddPostView from '../views/AddPostView.vue'
+import EditPostView from '../views/EditPostView.vue'
 
 const routes = [
   {
@@ -54,6 +55,11 @@ const routes = [
     path: '/addPostView',
     name: 'addPostView',
     component: AddPostView
+  },
+  {
+    path: '/editPost',
+    name: 'editPost',
+    component: EditPostView
   },
 ]
 

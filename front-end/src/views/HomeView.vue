@@ -19,8 +19,45 @@
             <img :src="post.image" alt="Post image" />
             <div class="interactions">
               <button @click="likePost(post.id)">Like ({{ post.likes }})</button>
-              <button>Comment ({{ post.comments }})</button>
+              <button @click="toggleComments(post.id)">Comment ({{ post.comments }})</button>
               <button>Download ({{ post.downloads }})</button>
+            </div>
+            <!-- 留言區 -->
+            <div v-if="post.showComments" class="comments-section">
+              <h4>All comments</h4>
+              <div v-for="comment in post.commentList" :key="comment.id" class="comment">
+                <div class="comment-header">
+                  <img :src="comment.avatar" alt="User Avatar" />
+                  <div>
+                    <strong>{{ comment.nickname }}</strong>
+                    <span>{{ comment.time }}</span>
+                  </div>
+                </div>
+                <p>{{ comment.text }}</p>
+                <div class="comment-actions">
+                  <button @click="likeComment(post.id, comment.id)">Like ({{ comment.likes
+                    }})</button>
+                  <button @click="toggleReplies(comment.id, post.id)">Reply ({{ comment.replies.length
+                    }})</button>
+                </div>
+                <!-- 回覆區 -->
+                <div v-if="comment.showReplies" class="replies">
+                  <div v-for="reply in comment.replies" :key="reply.id" class="reply">
+                    <div class="reply-header">
+                      <img :src="reply.avatar" alt="User Avatar" />
+                      <div>
+                        <strong>{{ reply.nickname }}</strong>
+                        <span>{{ reply.time }}</span>
+                      </div>
+                    </div>
+                    <p>{{ reply.text }}</p>
+                    <div class="reply-actions">
+                      <button @click="likeReply(post.id, comment.id, reply.id)">Like ({{
+                        reply.likes }})</button>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -47,17 +84,56 @@ export default {
       title: "Pixel Lab",
       nav: "",
       copyrightMessage1: "Respect other’s copyrights!",
-      copyrightMessage2: "Please cite the source when quote!",
+      copyrightMessage2: "Please cite the source when quoting!",
       posts: [
         {
           id: 1,
           user: "Meow",
-          time: "2 hours",
+          time: "2 hours ago",
           text: "I draw a cute kitty, come interact with me!",
           image: require("@/assets/kitty.png"),
           likes: 100,
           comments: 10,
           downloads: 500,
+          showComments: false,
+          commentList: [
+            {
+              id: 1,
+              avatar: require("@/assets/kitty.png"),
+              nickname: "Ragdoll",
+              text: "The kitty is super cute!",
+              time: "1 hour ago",
+              likes: 5,
+              replies: [
+                {
+                  id: 11,
+                  avatar: require("@/assets/kitty.png"),
+                  nickname: "Maine Coon Cat",
+                  text: "Meow!",
+                  time: "1 hour ago",
+                  likes: 2,
+                },
+              ],
+            },
+            {
+              id: 2,
+              avatar: require("@/assets/kitty.png"),
+              nickname: "British Shorthair",
+              text: "Give me more kitties!",
+              time: "1 hour ago",
+              likes: 10,
+              replies: [
+                {
+                  id: 21,
+                  avatar: require("@/assets/kitty.png"),
+                  nickname: "American Shorthair",
+                  text: "Everyone, come check out the kitty I drew!",
+                  time: "30 minutes ago",
+                  likes: 4,
+                },
+              ],
+            },
+          ],
         },
       ],
       userProfile: {
@@ -71,17 +147,37 @@ export default {
       const post = this.posts.find((post) => post.id === id);
       if (post) post.likes++;
     },
+    toggleComments(postId) {
+      const post = this.posts.find((p) => p.id === postId);
+      if (post) post.showComments = !post.showComments;
+    },
+    likeComment(postId, commentId) {
+      const post = this.posts.find((p) => p.id === postId);
+      const comment = post?.commentList.find((c) => c.id === commentId);
+      if (comment) comment.likes++;
+    },
+    toggleReplies(commentId, postId) {
+      const post = this.posts.find((p) => p.id === postId);
+      const comment = post?.commentList.find((c) => c.id === commentId);
+      if (comment) comment.showReplies = !comment.showReplies;
+    },
+    likeReply(postId, commentId, replyId) {
+      const post = this.posts.find((p) => p.id === postId);
+      const comment = post?.commentList.find((c) => c.id === commentId);
+      const reply = comment?.replies.find((r) => r.id === replyId);
+      if (reply) reply.likes++;
+    },
     enterDrawingArea() {
-      this.$router.push("/drawingArea")
+      this.$router.push("/drawingArea");
     },
     collectFeedback() {
-      this.$router.push("/userFeedback")
+      this.$router.push("/userFeedback");
     },
     toUserDetail() {
-      this.$router.push("/about")
+      this.$router.push("/about");
     },
     addNewPost() {
-      this.$router.push("/addPostView")
+      this.$router.push("/addPostView");
     },
   },
 };
@@ -211,5 +307,85 @@ body {
   align-items: center;
   cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.header {
+  background-color: #f5f5f5;
+  padding: 10px;
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  border-bottom: 1px solid #ddd;
+}
+
+.main {
+  padding: 20px;
+}
+
+.content .post {
+  border: 1px solid #ddd;
+  padding: 15px;
+  margin-bottom: 20px;
+  border-radius: 5px;
+  background-color: #f9f9f9;
+}
+
+.content .post img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 5px;
+}
+
+.content .post .interactions {
+  margin-top: 10px;
+}
+
+.content .post .interactions button {
+  margin-right: 10px;
+  padding: 10px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.comments-section {
+  margin-top: 10px;
+  padding: 10px;
+  border-top: 1px solid #ddd;
+  background-color: #f9f9f9;
+}
+
+.comment,
+.reply {
+  margin-bottom: 20px;
+  padding-bottom: 10px;
+}
+
+.comment-header,
+.reply-header {
+  display: flex;
+  align-items: center;
+  margin-bottom: 5px;
+}
+
+.comment-header img,
+.reply-header img {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.comment-actions,
+.reply-actions {
+  margin-top: 5px;
+}
+
+.replies {
+  margin-left: 20px;
+  padding-left: 10px;
+  border-left: 2px solid #ddd;
 }
 </style>
