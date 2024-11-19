@@ -35,7 +35,7 @@ public class LoginController {
             }
 
             // Validate password (assumes password is hashed)
-            if (!isPasswordValid(password, user.getPassword())) {
+            if (!loginService.isPasswordValid(password, user.getPassword())) {
                 logger.warn("Invalid password for email: {}", userEmail);
                 return ResponseEntity.status(401).body("Invalid credentials");
             }
@@ -80,7 +80,7 @@ public class LoginController {
             }
 
             // Simulate sending a reset password email
-            sendResetPasswordEmail(email);
+            loginService.sendResetPasswordEmail(email);
 
             logger.info("Reset password email sent to: {}", email);
             return ResponseEntity.ok("Reset password email sent successfully.");
@@ -90,15 +90,5 @@ public class LoginController {
         }
     }
 
-    private void sendResetPasswordEmail(String email) {
-        // Simulate sending an email (replace with actual email service logic)
-        logger.info("Simulating sending reset password email to: {}", email);
-        // You can use a real email service like JavaMailSender or third-party APIs such as SendGrid, Amazon SES, etc.
-    }
 
-    // Simulate password validation (use hashing like BCrypt in a real-world app)
-    private boolean isPasswordValid(String rawPassword, String hashedPassword) {
-        // Implement hashing logic or use a library like BCrypt
-        return rawPassword.equals(hashedPassword); // Replace with BCrypt validation
-    }
 }

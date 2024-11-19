@@ -35,4 +35,17 @@ public class LoginService {
 
         logger.info("User saved successfully.");
     }
+
+    private void sendResetPasswordEmail(String email) {
+        // Simulate sending an email (replace with actual email service logic)
+        logger.info("Simulating sending reset password email to: {}", email);
+        // You can use a real email service like JavaMailSender or third-party APIs such as SendGrid, Amazon SES, etc.
+        EmailUtil.sendEmail(email);
+    }
+
+    // Simulate password validation (use hashing like BCrypt in a real-world app)
+    private boolean isPasswordValid(String rawPassword, String hashedPassword) {
+        // Implement hashing logic or use a library like BCrypt
+        return rawPassword.equals(hashedPassword); // Replace with BCrypt validation
+    }
 }
