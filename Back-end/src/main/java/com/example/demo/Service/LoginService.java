@@ -48,4 +48,34 @@ public class LoginService {
         // Implement hashing logic or use a library like BCrypt
         return rawPassword.equals(hashedPassword); // Replace with BCrypt validation
     }
+
+    public void resetPassword(String email, String newPassword) {
+        try {
+            // Fetch user by email
+            User user = userRepository.findByEmail(email);
+    
+            if (user == null) {
+                logger.warn("User not found for email: {}", email);
+                throw new IllegalArgumentException("User not found for the provided email.");
+            }
+    
+            // Update user password
+            logger.info("Resetting password for user: {}", email);
+    
+            // Hash the new password in production (e.g., using BCrypt or similar library)
+            user.setPassword(newPassword);
+    
+            // Save updated user to the database
+            userRepository.save(user);
+            logger.info("Password reset successfully for user: {}", email);
+    
+        } catch (IllegalArgumentException e) {
+            logger.error("Validation error during password reset for email: {}, Error: {}", email, e.getMessage());
+            throw e; // Re-throw the exception to be handled at the controller level
+        } catch (Exception e) {
+            logger.error("Unexpected error during password reset for email: {}, Error: {}", email, e.getMessage(), e);
+            throw new RuntimeException("An error occurred while resetting the password. Please try again later.");
+        }
+    }
+    
 }

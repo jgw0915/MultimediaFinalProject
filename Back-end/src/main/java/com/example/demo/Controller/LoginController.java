@@ -90,5 +90,24 @@ public class LoginController {
         }
     }
 
+    @PostMapping("/resetPassword")
+    public ResponseEntity<String> resetPassword(@RequestParam String email, @RequestParam String newPassword) {
+        logger.info("Reset password request for email: {}", email);
+
+        try {
+            // Call the service to reset the password
+            loginService.resetPassword(email, newPassword);
+            logger.info("Password reset successfully for email: {}", email);
+            return ResponseEntity.ok("Password reset successfully.");
+        } catch (IllegalArgumentException e) {
+            logger.warn("Reset password failed for email: {}, Error: {}", email, e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            logger.error("Unexpected error during password reset for email: {}, Error: {}", email, e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
+        }
+}
+
+
 
 }
