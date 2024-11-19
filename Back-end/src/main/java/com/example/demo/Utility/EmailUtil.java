@@ -1,6 +1,7 @@
 import java.util.Properties;
 import javax.mail.*;
 import javax.mail.internet.*;
+import com.example.demo.Utility.GoogleOAuthUtils;
 
 public class EmailUtil {
 
@@ -8,7 +9,9 @@ public class EmailUtil {
     public static String sendEmail(String userEmail) {
         // Your email and password
         private final String senderEmail = "multimediafinalproject03@gmail.com"; // Replace with your email
-        private final String senderPassword = "!!abcd1234"; // Replace with your email password
+        // Get credentials and generate access token
+        Credential credential = GoogleOAuthUtils.getCredentials();
+        AccessToken accessToken = credential.getAccessToken();
         
         // Frontend reset password page link
         private String resetPasswordLink = "http://localhost:8080/resetPassword";
@@ -23,12 +26,13 @@ public class EmailUtil {
         properties.put("mail.smtp.port", "587"); // SMTP port
         properties.put("mail.smtp.auth", "true");
         properties.put("mail.smtp.starttls.enable", "true");
+        properties.put("mail.debug", "true");
 
         // Create a session with an authenticator
         private Session session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, senderPassword);
+                return new PasswordAuthentication(senderEmail, accessToken.getTokenValue());
             }
         });
 
