@@ -80,10 +80,16 @@ public class LoginController {
             }
 
             // Simulate sending a reset password email
-            loginService.sendResetPasswordEmail(email);
+            String msg = loginService.sendResetPasswordEmail(email);
 
-            logger.info("Reset password email sent to: {}", email);
-            return ResponseEntity.ok("Reset password email sent successfully.");
+            if (msg.startsWith("Email sent successfully")){
+                logger.info("Reset password email sent to: {}", email);
+                return ResponseEntity.ok("Reset password email sent successfully.");
+            }
+            else {
+                logger.error("Error sending reset password email to: {}, Error: {}", email, msg);
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending reset password email.");
+            }
         } catch (Exception e) {
             logger.error("Error during forgetPassword process for email: {}, Error: {}", email, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
