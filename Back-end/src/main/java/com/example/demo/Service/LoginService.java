@@ -36,7 +36,7 @@ public class LoginService {
         logger.info("User saved successfully.");
     }
 
-    public String sendResetPasswordEmail(String email) {
+    public String sendResetPasswordEmail(String email) throws Exception {
         // Simulate sending an email (replace with actual email service logic)
         logger.info("Simulating sending reset password email to: {}", email);
         // You can use a real email service like JavaMailSender or third-party APIs such as SendGrid, Amazon SES, etc.

@@ -1,24 +1,36 @@
+package com.example.demo.Utility;
+
 import java.util.Properties;
-import javax.mail.*;
-import javax.mail.internet.*;
-import com.example.demo.Utility.GoogleOAuthUtils;
+
+import javax.mail.Authenticator;
+import javax.mail.Message;
+import javax.mail.MessagingException;
+import javax.mail.PasswordAuthentication;
+import javax.mail.Session;
+import javax.mail.Transport;
+import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeMessage;
+
+import com.google.api.client.auth.oauth2.Credential;
+
+
 
 public class EmailUtil {
 
     // Function to send email
-    public static String sendEmail(String userEmail) {
+    public static String sendEmail(String userEmail) throws Exception {
         // Your email and password
-        private final String senderEmail = "multimediafinalproject03@gmail.com"; // Replace with your email
+        final String senderEmail = "multimediafinalproject03@gmail.com"; // Replace with your email
         // Get credentials and generate access token
         Credential credential = GoogleOAuthUtils.getCredentials();
-        AccessToken accessToken = credential.getAccessToken();
+        String accessToken = credential.getAccessToken();
         
         // Frontend reset password page link
-        private String resetPasswordLink = "http://localhost:8080/resetPassword";
+        String resetPasswordLink = "http://localhost:8080/resetPassword";
 
         // Email content
-        private String subject = "Reset Your Password";
-        private String messageContent = "Click the link below to reset your password:\n" + resetPasswordLink;
+        String subject = "Reset Your Password";
+        String messageContent = "Click the link below to reset your password:\n" + resetPasswordLink;
 
         // Setting up properties for the mail session
         Properties properties = new Properties();
@@ -29,10 +41,10 @@ public class EmailUtil {
         properties.put("mail.debug", "true");
 
         // Create a session with an authenticator
-        private Session session = Session.getInstance(properties, new Authenticator() {
+        Session session = Session.getInstance(properties, new Authenticator() {
             @Override
             protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, accessToken.getTokenValue());
+                return new PasswordAuthentication(senderEmail, accessToken);
             }
         });
 
