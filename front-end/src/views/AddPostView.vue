@@ -1,10 +1,19 @@
 <template>
     <div class="body">
         <div class="wrapper">
+            <h1>Create post</h1>
             <div class="inputBox">
-                <textarea v-model="feedback" placeholder="Meow, what's on your mind?"></textarea>
+                <textarea v-model="postContent" placeholder="分享您的心情或故事吧！"></textarea>
             </div>
-            <button class="button" @click="submitFeedback">Publish</button>
+            <div class="inputBox">
+                <label class="uploadLabel">上傳封面圖片：</label>
+                <input type="file" @change="handleFileUpload" accept="image/*" class="fileInput" />
+                <p v-if="uploadedImageName" class="fileInfo">已選擇圖片：{{ uploadedImageName }}</p>
+                <div v-if="uploadedImagePreview" class="imagePreview">
+                    <img :src="uploadedImagePreview" alt="預覽圖片" />
+                </div>
+            </div>
+            <button class="button" @click="submitPost">發佈</button>
         </div>
     </div>
 </template>
@@ -13,25 +22,59 @@
 export default {
     data() {
         return {
-            feedback: '',
+            postContent: '', // 貼文內容
+            uploadedImage: null, // 上傳的圖片檔案
+            uploadedImagePreview: null, // 圖片預覽 URL
+            uploadedImageName: '', // 圖片檔案名稱
         };
     },
     methods: {
-        submitFeedback() {
-            if (this.feedback.trim() === '') {
-                alert('Please enter your feedback before submitting!');
-            } else {
-                console.log('Feedback submitted:', this.feedback);
-                alert('Thank you for your feedback!');
-                this.$router.push('/');
-                this.feedback = '';
+        handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (file) {
+                if (file.type.startsWith('image/')) {
+                    this.uploadedImage = file;
+                    this.uploadedImageName = file.name;
+
+                    // 使用 FileReader 生成圖片預覽
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        this.uploadedImagePreview = e.target.result;
+                    };
+                    reader.readAsDataURL(file);
+                } else {
+                    alert('請上傳有效的圖片格式！');
+                    this.resetImageUpload();
+                }
             }
+        },
+        resetImageUpload() {
+            this.uploadedImage = null;
+            this.uploadedImagePreview = null;
+            this.uploadedImageName = '';
+        },
+        submitPost() {
+            if (this.postContent.trim() === '') {
+                alert('請輸入貼文內容！');
+            } else if (!this.uploadedImage) {
+                alert('請上傳一張圖片作為封面！');
+            } else {
+                console.log('貼文內容：', this.postContent);
+                console.log('上傳的圖片：', this.uploadedImage.name);
+                alert('貼文已成功發佈！');
+                this.resetForm();
+            }
+        },
+        resetForm() {
+            this.postContent = '';
+            this.resetImageUpload();
         },
     },
 };
 </script>
 
 <style scoped>
+/* 保持您的原始設計，新增的樣式保持簡潔 */
 * {
     margin: 0;
     padding: 0;
@@ -49,7 +92,8 @@ export default {
 }
 
 .wrapper {
-    width: 420px;
+    /* width: 800px;
+    height: 620px;
     background: rgba(144, 189, 231, 0.479);
     border: 2px solid rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(20px);
@@ -57,7 +101,7 @@ export default {
     color: #000;
     border-radius: 10px;
     padding: 30px 40px;
-    text-align: center;
+    text-align: center; */
 }
 
 .wrapper h1 {
@@ -72,8 +116,8 @@ export default {
 }
 
 .inputBox textarea {
-    width: 100%;
-    height: 150px;
+    width: 700px;
+    height: 200px;
     background-color: rgba(255, 255, 255, 0.8);
     border: 2px solid rgba(255, 255, 255, 0.2);
     border-radius: 10px;
@@ -86,6 +130,31 @@ export default {
 
 .inputBox textarea::placeholder {
     color: #aaa;
+}
+
+.fileInput {
+    width: 100%;
+    margin-top: 10px;
+    font-size: 14px;
+}
+
+.fileInfo {
+    margin-top: 10px;
+    font-size: 14px;
+    color: #555;
+}
+
+.imagePreview {
+    margin-top: 15px;
+    text-align: center;
+}
+
+.imagePreview img {
+    max-width: 600px;
+    max-height: 600px;
+    border-radius: 10px;
+    border: 2px solid rgba(255, 255, 255, 0.2);
+    object-fit: cover;
 }
 
 .wrapper .button {
