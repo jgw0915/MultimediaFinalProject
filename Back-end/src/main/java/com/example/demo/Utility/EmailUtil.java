@@ -1,68 +1,45 @@
 package com.example.demo.Utility;
 
-import java.util.Properties;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.MimeMessageHelper;
+import org.springframework.stereotype.Component;
 
-import javax.mail.Authenticator;
-import javax.mail.Message;
-import javax.mail.MessagingException;
-import javax.mail.PasswordAuthentication;
-import javax.mail.Session;
-import javax.mail.Transport;
-import javax.mail.internet.InternetAddress;
-import javax.mail.internet.MimeMessage;
+import jakarta.mail.MessagingException;
+import jakarta.mail.internet.MimeMessage;
 
-import com.google.api.client.auth.oauth2.Credential;
-
-
-
+@Component
 public class EmailUtil {
 
-    // Function to send email
-    public static String sendEmail(String userEmail) throws Exception {
-        // Your email and password
-        final String senderEmail = "multimediafinalproject03@gmail.com"; // Replace with your email
-        // Get credentials and generate access token
-        Credential credential = GoogleOAuthUtils.getCredentials();
-        String accessToken = credential.getAccessToken();
-        
-        // Frontend reset password page link
-        String resetPasswordLink = "http://localhost:8080/resetPassword";
+@Autowired
+private JavaMailSender javaMailSender;
 
-        // Email content
-        String subject = "Reset Your Password";
-        String messageContent = "Click the link below to reset your password:\n" + resetPasswordLink;
+private static final Logger logger = LoggerFactory.getLogger(EmailUtil.class);
 
-        // Setting up properties for the mail session
-        Properties properties = new Properties();
-        properties.put("mail.smtp.host", "smtp.gmail.com"); // Use your email's SMTP server
-        properties.put("mail.smtp.port", "587"); // SMTP port
-        properties.put("mail.smtp.auth", "true");
-        properties.put("mail.smtp.starttls.enable", "true");
-        properties.put("mail.debug", "true");
+public String sendResetPasswordEmail(String email) throws MessagingException {
+    try {
+        // Simulate sending a reset password email
+        // Replace this with actual email sending logic
+        logger.info("Sending reset password email to: {}", email);
+        MimeMessage mimeMessage = javaMailSender.createMimeMessage();
+        MimeMessageHelper mimeMessageHelper = new MimeMessageHelper(mimeMessage);
+        mimeMessageHelper.setTo(email);
+        mimeMessageHelper.setSubject("reset Password");
+        mimeMessageHelper.setText("""
+            <div>
+                <a href="http://localhost:8081/resetPassword?email=%s" target="_blank">click link to reset password</a>
+            </div>
+            """.formatted(email), true);
 
-        // Create a session with an authenticator
-        Session session = Session.getInstance(properties, new Authenticator() {
-            @Override
-            protected PasswordAuthentication getPasswordAuthentication() {
-                return new PasswordAuthentication(senderEmail, accessToken);
-            }
-        });
-
-        try {
-            // Create a MIME-style message
-            Message message = new MimeMessage(session);
-            message.setFrom(new InternetAddress(senderEmail));
-            message.setRecipient(Message.RecipientType.TO, new InternetAddress(userEmail));
-            message.setSubject(subject);
-            message.setText(messageContent);
-
-            // Send the email
-            Transport.send(message);
-            return "Email sent successfully to " + userEmail;
-
-        } catch (MessagingException e) {
-            e.printStackTrace();
-            return "Failed to send email: " + e.getMessage();
-        }
+        javaMailSender.send(mimeMessage);
+        // Example email sending logic
+        // emailService.send(email, "Reset Password", "Please reset your password using the following link...");
+        return "Email sent successfully";
+    } catch (Exception e) {
+        logger.error("Error sending reset password email to: {}, Error: {}", email, e.getMessage(), e);
+        return "Error sending reset password email";
     }
+}
 }

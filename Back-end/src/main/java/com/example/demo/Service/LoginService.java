@@ -16,6 +16,9 @@ public class LoginService {
     private final UserRepository userRepository;
 
     @Autowired
+    public EmailUtil emailUtil;
+
+    @Autowired
     public LoginService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -40,7 +43,7 @@ public class LoginService {
         // Simulate sending an email (replace with actual email service logic)
         logger.info("Simulating sending reset password email to: {}", email);
         // You can use a real email service like JavaMailSender or third-party APIs such as SendGrid, Amazon SES, etc.
-        String msg = EmailUtil.sendEmail(email);
+        String msg = emailUtil.sendResetPasswordEmail(email);
         return msg;
     }
 
