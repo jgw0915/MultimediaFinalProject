@@ -29,7 +29,7 @@ public String sendResetPasswordEmail(String email) throws MessagingException {
         mimeMessageHelper.setSubject("reset Password");
         mimeMessageHelper.setText("""
             <div>
-                <a href="http://localhost:8081/resetPassword?email=%s" target="_blank">click link to reset password</a>
+                <a href="http://localhost:8080/resetPassword?email=%s" target="_blank">click link to reset password</a>
             </div>
             """.formatted(email), true);
 
