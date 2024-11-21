@@ -11,17 +11,23 @@
       </div>
       <div class="content">
         <div class="scrollable">
+
           <div class="post" v-for="post in posts" :key="post.id">
             <div class="user-info">
-              <strong>{{ post.user }}</strong> <span>{{ post.time }}</span>
+              <img :src="post.avatar" alt="User Avatar" class="user-avatar" />
+              <div class="user-details">
+                <strong>{{ post.user }}</strong>
+                <span class="time">{{ post.time }}</span>
+              </div>
             </div>
             <p>{{ post.text }}</p>
             <img :src="post.image" alt="Post image" />
             <div class="interactions">
               <button @click="likePost(post.id)">Like ({{ post.likes }})</button>
               <button @click="toggleComments(post.id)">Comment ({{ post.comments }})</button>
-              <button>Download ({{ post.downloads }})</button>
+              <button @click="downloadImage(post.id)">Download ({{ post.downloads }})</button>
             </div>
+
             <!-- 留言區 -->
             <div v-if="post.showComments" class="comments-section">
               <h4>All comments</h4>
@@ -68,8 +74,8 @@
           <p>{{ userProfile.name }}</p>
         </div>
         <div class="actions">
-          <button @click="enterDrawingArea">Enter Drawing Area</button>
-          <button @click="collectFeedback">User Feedback Collection</button>
+          <button class="enterDrawingAreaBtn" @click="enterDrawingArea">Enter Drawing Area</button>
+          <button class="collectFeedbackBtn" @click="collectFeedback">User Feedback Collection</button>
         </div>
       </div>
     </div>
@@ -90,6 +96,7 @@ export default {
           id: 1,
           user: "Meow",
           time: "2 hours ago",
+          avatar: require("@/assets/kitty.png"),
           text: "I draw a cute kitty, come interact with me!",
           image: require("@/assets/kitty.png"),
           likes: 100,
@@ -146,6 +153,17 @@ export default {
     likePost(id) {
       const post = this.posts.find((post) => post.id === id);
       if (post) post.likes++;
+    },
+    downloadImage(postId) {
+      const post = this.posts.find((p) => p.id === postId);
+      if (post && post.image) {
+        // 創建一個隱藏的 a 標籤
+        const link = document.createElement("a");
+        link.href = post.image; // 設置圖片的 URL
+        link.download = `post_${postId}.png`; // 設置下載文件名
+        link.click(); // 模擬點擊觸發下載
+        link.remove(); // 清理 DOM 元素
+      }
     },
     toggleComments(postId) {
       const post = this.posts.find((p) => p.id === postId);
@@ -269,7 +287,8 @@ body {
 }
 
 .right-sidebar .user-profile {
-  text-align: center;
+  display: flex;
+  align-items: center;
   margin-bottom: 20px;
 }
 
@@ -277,18 +296,48 @@ body {
   width: 80px;
   height: 80px;
   border-radius: 50%;
+  margin-right: 10px;
+  /* 增加間距 */
+}
+
+.right-sidebar .user-profile p {
+  font-size: 1.2em;
+  font-weight: bold;
+  margin: 0;
+  /* 去掉預設間距 */
+}
+
+.right-sidebar .actions {
+  display: flex;
+  flex-direction: column;
+  /* 將按鈕垂直排列 */
+  align-items: center;
+  /* 對齊到中間 */
 }
 
 .right-sidebar .actions button {
-  display: block;
-  width: 100%;
-  margin-bottom: 10px;
+  width: 300px;
+  /* 讓按鈕寬度適應內容 */
   padding: 10px;
+  margin-bottom: 10px;
+  text-align: center;
   background-color: #28a745;
   color: white;
   border: none;
   border-radius: 5px;
   cursor: pointer;
+}
+
+.right-sidebar .actions .enterDrawingAreaBtn {
+  font-size: 3em;
+  height: 300px;
+  width: 60%;
+}
+
+.right-sidebar .actions .collectFeedbackBtn {
+  margin-top: 50px;
+  font-size: 1.2em;
+
 }
 
 .floating-button {
@@ -387,5 +436,34 @@ body {
   margin-left: 20px;
   padding-left: 10px;
   border-left: 2px solid #ddd;
+}
+
+.user-info {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 10px;
+}
+
+.user-avatar {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  margin-right: 10px;
+}
+
+.user-details {
+  display: flex;
+  flex-direction: column;
+}
+
+.user-details strong {
+  font-size: 16px;
+  color: #333;
+}
+
+.user-details .time {
+  font-size: 12px;
+  color: #888;
+  margin-top: 5px;
 }
 </style>
