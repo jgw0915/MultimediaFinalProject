@@ -19,6 +19,12 @@ public class User {
     @Field("_password") // Explicitly map to the MongoDB "_password" field
     private String password;
 
+    @Field("_profileImage") // Explicitly map to the MongoDB "_nickname" field
+    private String profileImage;
+    
+    @Field("_profileCover") // Explicitly map to the MongoDB "_password" field
+    private String profileCover;
+
     // Getters and Setters
 
     public String getId() {
@@ -51,5 +57,21 @@ public class User {
 
     public void setPassword(String password) {
         this.password = password;
+    }
+
+    public String getProfileImage() {
+        return password;
+    }
+
+    public void setProfileImage(String profileImage){
+        this.profileImage = profileImage;
+    }
+
+    public String getProfileCover() {
+        return profileCover;
+    }
+
+    public void setProfileImage(String profileCover){
+        this.profileCover = profileCover;
     }
 }

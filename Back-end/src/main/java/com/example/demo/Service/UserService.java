@@ -9,9 +9,9 @@ import com.example.demo.Model.User;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Utility.EmailUtil;
 @Service
-public class LoginService {
+public class UserService {
 
-    private static final Logger logger = LoggerFactory.getLogger(LoginService.class);
+    private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
 
@@ -19,7 +19,7 @@ public class LoginService {
     public EmailUtil emailUtil;
 
     @Autowired
-    public LoginService(UserRepository userRepository) {
+    public UserService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
 
@@ -80,6 +80,34 @@ public class LoginService {
             logger.error("Unexpected error during password reset for email: {}, Error: {}", email, e.getMessage(), e);
             throw new RuntimeException("An error occurred while resetting the password. Please try again later.");
         }
+    }
+
+    public void saveProfileImage(String email, MultipartFile image) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        // Save image to a storage service (e.g., S3, local disk) and update `profileImage` field
+        String imageUrl = saveToStorage(image); // Implement saveToStorage method
+        user.setProfileImage(imageUrl);
+        userRepository.save(user);
+    }
+
+    public void saveProfileCover(String email, MultipartFile cover) {
+        User user = userRepository.findByEmail(email);
+        if (user == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+        // Save cover to a storage service and update `profileCover` field
+        String coverUrl = saveToStorage(cover); // Implement saveToStorage method
+        user.setProfileCover(coverUrl);
+        userRepository.save(user);
+    }
+
+    private String saveToStorage(MultipartFile file) {
+        // Logic to save the file and return its URL/path
+        // Example: Upload to S3, or save to local filesystem
+        return "https://example.com/" + file.getOriginalFilename();
     }
     
 }
