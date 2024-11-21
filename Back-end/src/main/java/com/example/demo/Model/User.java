@@ -71,7 +71,7 @@ public class User {
         return profileCover;
     }
 
-    public void setProfileImage(String profileCover){
+    public void setProfileCover(String profileCover){
         this.profileCover = profileCover;
     }
 }

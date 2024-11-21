@@ -1,19 +1,26 @@
 package com.example.demo.Service;
 
+import java.io.IOException;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.Model.User;
 import com.example.demo.Repository.UserRepository;
 import com.example.demo.Utility.EmailUtil;
+
 @Service
 public class UserService {
 
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+
+    @Autowired
+    public ImgurService imgurService;
 
     @Autowired
     public EmailUtil emailUtil;
@@ -88,9 +95,14 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
         // Save image to a storage service (e.g., S3, local disk) and update `profileImage` field
-        String imageUrl = saveToStorage(image); // Implement saveToStorage method
-        user.setProfileImage(imageUrl);
-        userRepository.save(user);
+        try{
+            String imageUrl = saveToStorage(image); // Implement saveToStorage method
+            user.setProfileImage(imageUrl);
+            userRepository.save(user);
+        } catch (Exception e) {
+            logger.error("Error saving profile image", e);
+            throw new RuntimeException("Failed to save profile image", e);
+        }
     }
 
     public void saveProfileCover(String email, MultipartFile cover) {
@@ -99,15 +111,25 @@ public class UserService {
             throw new IllegalArgumentException("User not found");
         }
         // Save cover to a storage service and update `profileCover` field
-        String coverUrl = saveToStorage(cover); // Implement saveToStorage method
-        user.setProfileCover(coverUrl);
-        userRepository.save(user);
+        try {
+            String coverUrl = saveToStorage(cover); // Implement saveToStorage method
+            user.setProfileCover(coverUrl);
+            userRepository.save(user);
+        } catch (Exception e) {
+            logger.error("Error saving profile cover", e);
+            throw new RuntimeException("Failed to save profile cover", e);
+        }
     }
 
-    private String saveToStorage(MultipartFile file) {
+    private String saveToStorage(MultipartFile file) throws Exception {
         // Logic to save the file and return its URL/path
-        // Example: Upload to S3, or save to local filesystem
-        return "https://example.com/" + file.getOriginalFilename();
+        try {
+            String savedUrl = imgurService.uploadImage(file);
+            return savedUrl;
+        } catch (IOException e) {
+            logger.error("Error uploading image", e);
+            throw new RuntimeException("Failed to upload image", e);
+        }
     }
     
 }
