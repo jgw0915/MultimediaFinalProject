@@ -174,7 +174,7 @@ export default {
       this.$router.push("/userFeedback");
     },
     toUserDetail() {
-      this.$router.push("/about");
+      this.$router.push("/profile");
     },
     addNewPost() {
       this.$router.push("/addPostView");

@@ -3,14 +3,15 @@
     <div class="profile-header">
       <div class="cover-photo">
         <img :src="coverPhoto" alt="Cover Photo" />
-        <button class="edit-cover-button" @click="editCoverPhoto">Edit Cover Photo</button>
+        <button class="edit-cover-button" @click="triggerFileInput('cover')">Edit Cover Photo</button>
       </div>
       <div class="profile-info">
         <div class="profile-picture-container">
           <img class="profile-picture" :src="profilePicture" alt="Profile Picture" />
-          <button class="edit-profile-picture" @click="editProfilePicture">
+          <button class="edit-profile-picture" @click="triggerFileInput('profile')">
             <span class="camera-icon">📷</span>
           </button>
+          <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="handleFileChange" />
           <div class="profile-details">
             <h2>{{ userName }}</h2>
             <p>{{ userBio }}</p>
@@ -60,14 +61,55 @@ export default {
           showOptions: false,
         },
       ],
+      uploadTarget: "",
     };
   },
   methods: {
-    editCoverPhoto() {
-      alert("Edit cover photo functionality");
+    triggerFileInput(target) {
+      this.uploadTarget = target;
+      this.$refs.fileInput.click();
     },
-    editProfilePicture() {
-      alert("Edit profile picture functionality");
+
+    handleFileChange(event) {
+      const file = event.target.files[0];
+      if (file) {
+        this.uploadProfilePicture(file);
+      }
+    },
+
+    async uploadProfilePicture(file) {
+      const formData = new FormData();
+      formData.append('image', file);
+      formData.append('email', "test");
+      let url = "";
+      if (this.uploadTarget === "cover") {
+        url = "/api/saveProfileCover";
+      } else {
+        url = "/api/saveProfileImage";
+      }
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (response.ok) {
+          const newPictureUrl = await response.text();
+          if (this.uploadTarget === "cover") {
+            this.coverPhoto = newPictureUrl;
+          } else {
+            this.profilePicture = newPictureUrl;
+          }
+          alert('Profile picture updated successfully!');
+        } else {
+          const errorMessage = await response.text();
+          console.error(errorMessage);
+          alert(`Error: ${errorMessage}`);
+        }
+      } catch (error) {
+        console.error('Error uploading profile picture:', error);
+        alert('An error occurred while uploading the profile picture.');
+      }
     },
     editPost(postId) {
       alert(`Editing post with ID: ${postId}`);

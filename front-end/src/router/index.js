@@ -3,7 +3,7 @@ import LoginView from '../views/LoginView.vue'
 import RegisterView from '../views/RegisterView.vue'
 import ForgotPasswordView from '../views/ForgotPasswordView.vue'
 import ResetPasswordView from '../views/ResetPasswordView.vue'
-import AboutView from '../views/AboutView.vue'
+import ProfileView from '../views/ProfileView.vue'
 import HomeView from '../views/HomeView.vue'
 import DrawingAreaView from '../views/DrawingAreaView.vue'
 import UserFeedbackView from '../views/UserFeedbackView.vue'
@@ -32,9 +32,9 @@ const routes = [
     component: ResetPasswordView
   },
   {
-    path: '/about',
-    name: 'about',
-    component: AboutView
+    path: '/profile',
+    name: 'profile',
+    component: ProfileView
   },
   {
     path: '/',
