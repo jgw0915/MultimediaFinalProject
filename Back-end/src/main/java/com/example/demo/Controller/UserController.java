@@ -8,13 +8,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.example.demo.Model.User;
 import com.example.demo.Model.UserImageInsertParam;
 import com.example.demo.Service.UserService;
+
 
 @RestController
 @RequestMapping("/api")
@@ -122,8 +121,8 @@ public class UserController {
     public ResponseEntity<String> saveProfileImage(
             UserImageInsertParam userImageInsertParam) {
         try {
-            userService.saveProfileImage(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
-            return ResponseEntity.ok("Profile image saved successfully.");
+            String imageUrl = userService.saveProfileImage(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
+            return ResponseEntity.ok(imageUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {
@@ -135,8 +134,8 @@ public class UserController {
     public ResponseEntity<String> saveProfileCover(
             UserImageInsertParam userImageInsertParam) {
         try {
-            userService.saveProfileCover(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
-            return ResponseEntity.ok("Profile cover saved successfully.");
+            String coverUrl = userService.saveProfileCover(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
+            return ResponseEntity.ok(coverUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
         } catch (Exception e) {

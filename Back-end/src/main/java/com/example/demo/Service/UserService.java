@@ -89,9 +89,10 @@ public class UserService {
         }
     }
 
-    public void saveProfileImage(String email, MultipartFile image) {
+    public String saveProfileImage(String email, MultipartFile image) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
+
             throw new IllegalArgumentException("User not found");
         }
         // Save image to a storage service (e.g., S3, local disk) and update `profileImage` field
@@ -99,13 +100,15 @@ public class UserService {
             String imageUrl = saveToStorage(image); // Implement saveToStorage method
             user.setProfileImage(imageUrl);
             userRepository.save(user);
+            logger.info("Profile image saved successfully. Url: "+imageUrl);
+            return imageUrl;
         } catch (Exception e) {
             logger.error("Error saving profile image", e);
             throw new RuntimeException("Failed to save profile image", e);
         }
     }
 
-    public void saveProfileCover(String email, MultipartFile cover) {
+    public String saveProfileCover(String email, MultipartFile cover) {
         User user = userRepository.findByEmail(email);
         if (user == null) {
             throw new IllegalArgumentException("User not found");
@@ -115,6 +118,8 @@ public class UserService {
             String coverUrl = saveToStorage(cover); // Implement saveToStorage method
             user.setProfileCover(coverUrl);
             userRepository.save(user);
+            logger.info("Profile cover saved successfully. Url: "+coverUrl);
+            return coverUrl;
         } catch (Exception e) {
             logger.error("Error saving profile cover", e);
             throw new RuntimeException("Failed to save profile cover", e);
