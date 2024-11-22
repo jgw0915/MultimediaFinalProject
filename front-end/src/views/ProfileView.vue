@@ -2,19 +2,18 @@
   <div>
     <div class="profile-header">
       <div class="cover-photo">
-        <img :src="coverPhoto" alt="Cover Photo" />
+        <img :src="userProfile.profileCover" alt="Cover Photo" />
         <button class="edit-cover-button" @click="triggerFileInput('cover')">Edit Cover Photo</button>
       </div>
       <div class="profile-info">
         <div class="profile-picture-container">
-          <img class="profile-picture" :src="profilePicture" alt="Profile Picture" />
+          <img class="profile-picture" :src="userProfile.profileImage" alt="Profile Picture" />
           <button class="edit-profile-picture" @click="triggerFileInput('profile')">
             <span class="camera-icon">📷</span>
           </button>
           <input type="file" ref="fileInput" style="display: none" accept="image/*" @change="handleFileChange" />
           <div class="profile-details">
-            <h2>{{ userName }}</h2>
-            <p>{{ userBio }}</p>
+            <h2>{{ userProfile.nickname }}</h2>
           </div>
         </div>
       </div>
@@ -24,7 +23,7 @@
       <div class="post" v-for="post in posts" :key="post.id">
         <div class="post-header">
           <div class="post-user-info">
-            <img class="post-user-picture" :src="profilePicture" alt="User Picture" />
+            <img class="post-user-picture" :src="post.userPicture" alt="User Picture" />
             <div>
               <h4>{{ post.user }}</h4>
               <span>{{ post.time }}</span>
@@ -48,14 +47,16 @@
 export default {
   data() {
     return {
-      coverPhoto: require("@/assets/kitty.png"),
-      profilePicture: require("@/assets/kitty.png"),
-      userName: "Meow",
-      userBio: "Using large photos, cameras can help update.",
+      userProfile: {
+        nickname: "",
+        profileImage: "",
+        profileCover: "",
+      },
       posts: [
         {
           id: 1,
           user: "Meow",
+          userPicture: require("@/assets/kitty.png"),
           time: "2 hours ago",
           content: "This is a post content example.",
           showOptions: false,
@@ -96,9 +97,9 @@ export default {
         if (response.ok) {
           const newPictureUrl = await response.text();
           if (this.uploadTarget === "cover") {
-            this.coverPhoto = newPictureUrl;
+            this.userProfile.profileCover = newPictureUrl;
           } else {
-            this.profilePicture = newPictureUrl;
+            this.userProfile.profileImage = newPictureUrl;
           }
           alert('Profile picture updated successfully!');
         } else {
@@ -126,6 +127,9 @@ export default {
         return { ...post, showOptions: false };
       });
     },
+  },
+  created() {
+    this.userProfile = this.$route.query;
   },
 };
 </script>
@@ -206,7 +210,7 @@ body {
 .camera-icon {
   font-size: 20px;
   margin-bottom: 110px;
-  margin-right: 220px;
+  margin-right: 5px;
 }
 
 .profile-details h2 {

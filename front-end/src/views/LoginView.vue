@@ -52,6 +52,7 @@ export default {
           // 根據響應內容進行處理
           if (data.includes("Login successful")) {
             alert("User logged in successfully!");
+            localStorage.setItem('userEmail', this.email);
             this.$router.push('/');
           } else {
             console.error("Login failed:", data);
