@@ -70,8 +70,8 @@
       </div>
       <div class="right-sidebar">
         <div @click="toUserDetail" class="user-profile">
-          <img :src="userProfile.avatar" alt="User Avatar" />
-          <p>{{ userProfile.name }}</p>
+          <img :src="userProfile.profileImage" alt="User Avatar" />
+          <p>{{ userProfile.nickname }}</p>
         </div>
         <div class="actions">
           <button class="enterDrawingAreaBtn" @click="enterDrawingArea">Enter Drawing Area</button>
@@ -144,12 +144,46 @@ export default {
         },
       ],
       userProfile: {
-        name: "Meow",
-        avatar: require("@/assets/kitty.png"),
+        nickname: "",
+        profileImage: "",
+        profileCover: "",
       },
     };
   },
   methods: {
+    async fetchUserProfile() {
+      try {
+        // 從 localStorage 獲取 userEmail
+        const userEmail = localStorage.getItem("userEmail");
+        if (!userEmail) throw new Error("User email is not set in localStorage");
+
+        // 調用後端 API
+        const response = await fetch(`/api/getUser?userEmail=${userEmail}`);
+        const result = await response.text();
+
+        // 解析後端返回的數據
+        const userProfile = this.parseUserProfile(result);
+        if (userProfile) {
+          this.userProfile.nickname = userProfile.nickname;
+          this.userProfile.profileImage = userProfile.profileImage;
+          this.userProfile.profileCover = userProfile.profileCover;
+        }
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error.message);
+      }
+    },
+    parseUserProfile(responseText) {
+      const regex = /User\{id='.*?', email='.*?', nickname='(.*?)', password='.*?', profileImage='(.*?)', profileCover='(.*?)'\}/;
+      const match = responseText.match(regex);
+      if (match) {
+        return {
+          nickname: match[1],
+          profileImage: match[2],
+          profileCover: match[3],
+        };
+      }
+      return null;
+    },
     likePost(id) {
       const post = this.posts.find((post) => post.id === id);
       if (post) post.likes++;
@@ -192,11 +226,22 @@ export default {
       this.$router.push("/userFeedback");
     },
     toUserDetail() {
-      this.$router.push("/profile");
+      this.$router.push({
+        path: '/profile',
+        query: {
+          nickname: this.userProfile.nickname,
+          profileImage: this.userProfile.profileImage,
+          profileCover: this.userProfile.profileCover,
+        },
+      }
+      );
     },
     addNewPost() {
       this.$router.push("/addPostView");
     },
+  },
+  async created() {
+    await this.fetchUserProfile();
   },
 };
 </script>

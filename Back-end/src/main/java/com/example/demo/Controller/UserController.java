@@ -111,7 +111,7 @@ public class UserController {
                 return ResponseEntity.status(404).body("User not found");
             }
 
-            return ResponseEntity.ok(userEmail);
+            return ResponseEntity.ok(user.toString());
 
         } catch (Exception e) {
             logger.error("Error during login for email: {}, Error: {}", userEmail, e.getMessage(), e);
