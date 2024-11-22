@@ -1,2 +1,4 @@
 ClientID : 12b8266187ce4d0
 CLient-Secret : 2edf0798a51e8c12c4fc4cadf55130611773dfcc
+
+http://localhost:8080/callback#access_token=cebdca665fd63ec7abb69cffa49b66895bc46f63&expires_in=315360000&token_type=bearer&refresh_token=7adc4e074d33bb19e008c1f7b2bf318d8bf82382&account_username=MultimediaFianlProject&account_id=186558519
