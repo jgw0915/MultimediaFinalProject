@@ -74,4 +74,16 @@ public class User {
     public void setProfileCover(String profileCover){
         this.profileCover = profileCover;
     }
+
+    @Override
+    public String toString() {
+        return "User{" +
+                "id='" + id + '\'' +
+                ", email='" + email + '\'' +
+                ", nickname='" + nickname + '\'' +
+                ", password='" + password + '\'' +
+                ", profileImage='" + profileImage + '\'' +
+                ", profileCover='" + profileCover + '\'' +
+                '}';
+    }
 }
