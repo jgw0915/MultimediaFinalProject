@@ -1,6 +1,11 @@
 package com.example.demo.Service;
 
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,6 +23,8 @@ public class UserService {
     private static final Logger logger = LoggerFactory.getLogger(UserService.class);
 
     private final UserRepository userRepository;
+
+    private static final String TEMP_DIR = "/path/to/temp/dir";
 
     @Autowired
     public ImgurService imgurService;
@@ -97,6 +104,9 @@ public class UserService {
         }
         // Save image to a storage service (e.g., S3, local disk) and update `profileImage` field
         try{
+            // Save the file locally
+            File localFile = saveFileLocally(image);
+
             String imageUrl = saveToStorage(image); // Implement saveToStorage method
             user.setProfileImage(imageUrl);
             userRepository.save(user);
@@ -115,6 +125,8 @@ public class UserService {
         }
         // Save cover to a storage service and update `profileCover` field
         try {
+            File localFile = saveFileLocally(cover);
+
             String coverUrl = saveToStorage(cover); // Implement saveToStorage method
             user.setProfileCover(coverUrl);
             userRepository.save(user);
@@ -125,6 +137,28 @@ public class UserService {
             throw new RuntimeException("Failed to save profile cover", e);
         }
     }
+
+    private File saveFileLocally(MultipartFile file) throws IOException {
+        // Ensure the temporary directory exists
+        Path tempDir = Paths.get(TEMP_DIR);
+        if (!Files.exists(tempDir)) {
+            Files.createDirectories(tempDir);
+        }
+
+        // Create a local file with a unique name
+        String originalFilename = file.getOriginalFilename();
+        String uniqueFilename = System.currentTimeMillis() + "_" + originalFilename;
+        Path filePath = tempDir.resolve(uniqueFilename);
+        File localFile = filePath.toFile();
+
+        // Save the MultipartFile to the local file
+        try (FileOutputStream fos = new FileOutputStream(localFile)) {
+            fos.write(file.getBytes());
+        }
+
+        return localFile;
+    }
+
 
     private String saveToStorage(MultipartFile file) throws Exception {
         // Logic to save the file and return its URL/path
