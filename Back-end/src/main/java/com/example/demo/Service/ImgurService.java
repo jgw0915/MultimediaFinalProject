@@ -30,28 +30,37 @@ public class ImgurService {
 
     public String uploadImage(MultipartFile image) throws IOException {
         String url = "https://api.imgur.com/3/image";
+        
+        // Set headers
         HttpHeaders headers = new HttpHeaders();
-        headers.setContentType(MediaType.APPLICATION_JSON);
+        headers.setContentType(MediaType.MULTIPART_FORM_DATA);
         headers.set("Authorization", "Client-ID " + imgurConfig.getId());
 
-        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
-        body.add("image", new ByteArrayResource(image.getBytes()) {
+        // Prepare the file part
+        ByteArrayResource fileAsResource = new ByteArrayResource(image.getBytes()) {
             @Override
             public String getFilename() {
                 return image.getOriginalFilename();
             }
-        });
+        };
 
+        // Prepare the body
+        MultiValueMap<String, Object> body = new LinkedMultiValueMap<>();
+        body.add("image", fileAsResource);
+
+        // Create the request entity
         HttpEntity<MultiValueMap<String, Object>> requestEntity = new HttpEntity<>(body, headers);
 
+        // Send the request
         ResponseEntity<Map> response = restTemplate.postForEntity(url, requestEntity, Map.class);
 
+        // Handle the response
         if (response.getStatusCode().is2xxSuccessful()) {
             Map<String, Object> responseBody = response.getBody();
             Map<String, String> data = (Map<String, String>) responseBody.get("data");
             return data.get("link");
         } else {
-            throw new RuntimeException("Failed to upload image to Imgur");
+            throw new RuntimeException("Failed to upload image to Imgur: " + response.getStatusCode());
         }
     }
 }

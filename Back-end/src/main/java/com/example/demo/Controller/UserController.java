@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -117,7 +118,9 @@ public class UserController {
     }
 
     @PostMapping("/saveProfileImage")
-    public ResponseEntity<String> saveProfileImage(@RequestParam String email, @RequestParam MultipartFile image) {
+    public ResponseEntity<String> saveProfileImage(
+            @RequestParam("email") String email,
+            @RequestPart("image") MultipartFile image) {
         try {
             userService.saveProfileImage(email, image);
             return ResponseEntity.ok("Profile image saved successfully.");
@@ -129,9 +132,11 @@ public class UserController {
     }
 
     @PostMapping("/saveProfileCover")
-    public ResponseEntity<String> saveProfileCover(@RequestParam String email, @RequestParam MultipartFile cover) {
+    public ResponseEntity<String> saveProfileCover(
+            @RequestParam("email") String email,
+            @RequestPart("image") MultipartFile image) {
         try {
-            userService.saveProfileCover(email, cover);
+            userService.saveProfileCover(email, image);
             return ResponseEntity.ok("Profile cover saved successfully.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
