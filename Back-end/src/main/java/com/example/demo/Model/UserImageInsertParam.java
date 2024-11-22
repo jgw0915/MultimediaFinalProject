@@ -2,7 +2,7 @@ package com.example.demo.Model;
 
 import org.springframework.web.multipart.MultipartFile;
 
-public class UserImageSelectParam {
+public class UserImageInsertParam {
     private String email;
     private MultipartFile image;
 
