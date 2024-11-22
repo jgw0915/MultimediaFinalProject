@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -95,6 +96,26 @@ public class UserController {
         } catch (Exception e) {
             logger.error("Error during forgetPassword process for email: {}, Error: {}", email, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
+        }
+    }
+
+    @GetMapping("/getUser")
+    public ResponseEntity<String> getUser(@RequestParam String userEmail) {
+        logger.info("Getting user data by email: {}",userEmail);
+
+        try {
+            // Check if user exists
+            User user = userService.getUserByEmail(userEmail);
+            if (user == null) {
+                logger.warn("User not found for email: {}", userEmail);
+                return ResponseEntity.status(404).body("User not found");
+            }
+
+            return ResponseEntity.ok(userEmail);
+
+        } catch (Exception e) {
+            logger.error("Error during login for email: {}, Error: {}", userEmail, e.getMessage(), e);
+            return ResponseEntity.status(500).body("Internal server error");
         }
     }
 
