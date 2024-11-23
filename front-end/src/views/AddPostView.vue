@@ -22,6 +22,12 @@
 export default {
     data() {
         return {
+            userProfile: {
+                email: "",
+                nickname: "",
+                profileImage: "",
+                profileCover: "",
+            },
             postContent: '', // 貼文內容
             uploadedImage: null, // 上傳的圖片檔案
             uploadedImagePreview: null, // 圖片預覽 URL
@@ -63,32 +69,60 @@ export default {
                 return;
             }
 
-            try {
-                // 創建 FormData
-                const formData = new FormData();
-                formData.append('content', this.postContent);
-                // formData.append('image', this.uploadedImage);
+            let newPictureUrl = '';
 
-                // 使用 fetch 發送 POST 請求
-                const response = await fetch('/api/posts/add', {
+            try {
+                const imageFormData = new FormData();
+                imageFormData.append('image', this.uploadedImage);
+                const imageResponse = await fetch("/api/getImageUrl", {
                     method: 'POST',
-                    body: formData,
-                    headers: {
-                        // 不要設定 Content-Type，瀏覽器會自動添加正確的 boundary
-                    },
+                    body: imageFormData,
                 });
 
-                if (response.ok) {
-                    const result = await response.text();
+                if (imageResponse.ok) {
+                    newPictureUrl = await imageResponse.text();
+                } else {
+                    const errorMessage = await imageResponse.text();
+                    console.error(errorMessage);
+                    alert(`圖片上傳失敗：${errorMessage}`);
+                    return;
+                }
+            } catch (error) {
+                console.error('圖片上傳過程中發生錯誤：', error);
+                alert('圖片上傳過程中發生錯誤，請稍後再試！');
+                return;
+            }
+
+            try {
+                const postFormData = {
+                    "contentText": this.postContent,
+                    "contentImage": newPictureUrl,
+                    "author": this.userProfile,
+                    "likes": 0,
+                    "downloads": 0
+                };
+
+                const postResponse = await fetch('/api/posts/add', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(postFormData),
+                });
+
+                if (postResponse.ok) {
+                    const result = await postResponse.text();
                     alert('貼文已成功發佈！');
                     console.log('伺服器返回：', result);
                     this.resetForm();
+                    this.$router.push('/');
                 } else {
-                    alert('貼文發佈失敗，請稍後再試！');
-                    console.error('伺服器錯誤：', response.statusText);
+                    const errorMessage = await postResponse.text();
+                    console.error('貼文發佈失敗：', errorMessage);
+                    alert(`貼文發佈失敗：${errorMessage}`);
                 }
             } catch (error) {
-                console.error('發佈貼文時發生錯誤：', error);
+                console.error('貼文發佈過程中發生錯誤：', error);
                 alert('發佈貼文時發生錯誤，請稍後再試！');
             }
         },
@@ -96,6 +130,9 @@ export default {
             this.postContent = '';
             this.resetImageUpload();
         },
+    },
+    created() {
+        this.userProfile = this.$route.query;
     },
 };
 </script>

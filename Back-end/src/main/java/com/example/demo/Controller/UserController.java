@@ -53,7 +53,7 @@ public class UserController {
 
     @PostMapping("/register")
     public ResponseEntity<String> register(@RequestParam String nickname, @RequestParam String password,
-            @RequestParam String email) {
+                                           @RequestParam String email) {
         try {
             User user = userService.getUserByEmail(email);
             if (user != null) {
@@ -166,4 +166,17 @@ public class UserController {
         }
     }
 
+    @PostMapping("/getImageUrl")
+    public ResponseEntity<String> getImageUrl(
+            UserImageInsertParam userImageInsertParam) {
+        try {
+            String url = userService.getImageUrl(
+                    userImageInsertParam.getImage());
+            return ResponseEntity.ok(url);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error getting image url.");
+        }
+    }
 }

@@ -46,10 +46,8 @@ public class PostController {
         try {
             logger.info("Post content text: {}",post.getContentText());
             logger.info("Post content image: {}",post.getContentImage());
-            logger.info("Post title: {}",post.getTitle());
             post.setCreatedAt(LocalDateTime.now());
             post.setUpdatedAt(LocalDateTime.now());
-            post.setViews(0);
             Post savedPost = postRepository.save(post);
             return ResponseEntity.status(HttpStatus.CREATED).body("Saved Post Successfully");
         } catch (Exception e) {
@@ -96,7 +94,6 @@ public class PostController {
                 Post post = postOptional.get();
 
                 // Update fields
-                post.setTitle(updatedPost.getTitle());
                 post.setContentText(updatedPost.getContentText());
                 post.setContentImage(updatedPost.getContentImage());
                 post.setUpdatedAt(LocalDateTime.now());

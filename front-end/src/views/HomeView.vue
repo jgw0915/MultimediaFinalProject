@@ -91,62 +91,12 @@ export default {
       nav: "",
       copyrightMessage1: "Respect other’s copyrights!",
       copyrightMessage2: "Please cite the source when quoting!",
-      posts: [
-        {
-          id: 1,
-          user: "Meow",
-          time: "2 hours ago",
-          avatar: require("@/assets/kitty.png"),
-          text: "I draw a cute kitty, come interact with me!",
-          image: require("@/assets/kitty.png"),
-          likes: 100,
-          comments: 10,
-          downloads: 500,
-          showComments: false,
-          commentList: [
-            {
-              id: 1,
-              avatar: require("@/assets/kitty.png"),
-              nickname: "Ragdoll",
-              text: "The kitty is super cute!",
-              time: "1 hour ago",
-              likes: 5,
-              replies: [
-                {
-                  id: 11,
-                  avatar: require("@/assets/kitty.png"),
-                  nickname: "Maine Coon Cat",
-                  text: "Meow!",
-                  time: "1 hour ago",
-                  likes: 2,
-                },
-              ],
-            },
-            {
-              id: 2,
-              avatar: require("@/assets/kitty.png"),
-              nickname: "British Shorthair",
-              text: "Give me more kitties!",
-              time: "1 hour ago",
-              likes: 10,
-              replies: [
-                {
-                  id: 21,
-                  avatar: require("@/assets/kitty.png"),
-                  nickname: "American Shorthair",
-                  text: "Everyone, come check out the kitty I drew!",
-                  time: "30 minutes ago",
-                  likes: 4,
-                },
-              ],
-            },
-          ],
-        },
-      ],
+      posts: [],
       userProfile: {
         profileImage: "https://via.placeholder.com/80",
         nickname: "Anonymous",
         profileCover: "https://via.placeholder.com/300x150",
+        email: "",
       },
     };
   },
@@ -163,6 +113,66 @@ export default {
         this.userProfile = userProfile;
       } catch (error) {
         console.error("Failed to fetch user profile:", error.message);
+      }
+    },
+    async fetchAllPosts() {
+      try {
+        const response = await fetch(`/api/posts/getAll`);
+        if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+        const data = await response.json();
+
+        this.posts = data.map(post => ({
+          id: post.id,
+          user: post.author.nickname || "Anonymous",
+          time: new Date(post.createdAt).toLocaleString(),
+          avatar: post.author.profileImage || "https://via.placeholder.com/50",
+          text: post.contentText,
+          image: post.contentImage,
+          likes: post.likes,
+          downloads: post.downloads,
+          comments: 0, // 暫無評論數據，這裡設為 0
+          commentList: [{
+            id: 1,
+            avatar: require("@/assets/kitty.png"),
+            nickname: "Ragdoll",
+            text: "The kitty is super cute!",
+            time: "1 hour ago",
+            likes: 5,
+            replies: [
+              {
+                id: 11,
+                avatar: require("@/assets/kitty.png"),
+                nickname: "Maine Coon Cat",
+                text: "Meow!",
+                time: "1 hour ago",
+                likes: 2,
+              },
+            ],
+          }, {
+            id: 2,
+            avatar: require("@/assets/kitty.png"),
+            nickname: "British Shorthair",
+            text: "Give me more kitties!",
+            time: "1 hour ago",
+            likes: 10,
+            replies: [
+              {
+                id: 21,
+                avatar: require("@/assets/kitty.png"),
+                nickname: "American Shorthair",
+                text: "Everyone, come check out the kitty I drew!",
+                time: "30 minutes ago",
+                likes: 4,
+              },
+            ],
+          },
+          ], // 暫無評論列表，初始化為空
+          showComments: false, // 初始不顯示評論區
+        }));
+
+
+      } catch (error) {
+        console.error("Failed to fetch all posts:", error.message);
       }
     },
     likePost(id) {
@@ -212,20 +222,29 @@ export default {
           nickname: this.userProfile.nickname,
           profileImage: this.userProfile.profileImage,
           profileCover: this.userProfile.profileCover,
+          email: this.userProfile.email,
         },
       }
       );
     },
     addNewPost() {
-      this.$router.push("/addPostView");
+      this.$router.push({
+        path: "/addPostView",
+        query: {
+          nickname: this.userProfile.nickname,
+          profileImage: this.userProfile.profileImage,
+          profileCover: this.userProfile.profileCover,
+          email: this.userProfile.email,
+        },
+      });
     },
   },
   async created() {
-    console.log(localStorage.getItem("isLogin"));
     if (localStorage.getItem("isLogin") == "false") {
       this.$router.push("/login")
     }
     await this.fetchUserProfile();
+    await this.fetchAllPosts();
   },
 };
 </script>

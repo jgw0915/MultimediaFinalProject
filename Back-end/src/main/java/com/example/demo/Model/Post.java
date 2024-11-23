@@ -10,62 +10,99 @@ import org.springframework.data.mongodb.core.mapping.Document;
 public class Post {
     @Id
     private String id;                // Unique ID for the post
-    private String title;             // Title of the post
     private String contentText;
     private String contentImage;          // Content of the post
     private User author;            // Author of the post
-    private List<Comment> comments;   // List of comments
-    private int views;                // Number of views
-    private List<User> tags;        // Tags associated with the post
-    private boolean isPublished;      // Whether the post is published
+//    private List<Comment> comments;   // List of comments
+    private int likes;
+    private int downloads;
     private LocalDateTime createdAt;  // Post creation timestamp
     private LocalDateTime updatedAt;  // Post update timestamp
 
-    // Getters and Setters
-    public String getId() { return id; }
-    public void setId(String id) { this.id = id; }
+    public void setId(String id) {
+        this.id = id;
+    }
 
-    public String getTitle() { return title; }
-    public void setTitle(String title) { this.title = title; }
+    public void setContentText(String contentText) {
+        this.contentText = contentText;
+    }
 
-    public String getContentText() { return contentText; }
-    public void setContentText(String contentText) { this.contentText = contentText; }
+    public void setContentImage(String contentImage) {
+        this.contentImage = contentImage;
+    }
 
-    public String getContentImage() { return contentImage; }
-    public void setContentImage(String contentImage) { this.contentImage = contentImage; }
+    public void setAuthor(User author) {
+        this.author = author;
+    }
 
-    public User getAuthor() { return author; }
-    public void setAuthor(User author) { this.author = author; }
+//    public void setComments(List<Comment> comments) {
+//        this.comments = comments;
+//    }
 
-    public List<Comment> getComments() { return comments; }
-    public void setComments(List<Comment> comments) { this.comments = comments; }
+    public void setLikes(int likes) {
+        this.likes = likes;
+    }
 
-    public int getViews() { return views; }
-    public void setViews(int views) { this.views = views; }
+    public void setDownloads(int downloads) {
+        this.downloads = downloads;
+    }
 
-    public List<User> getTags() { return tags; }
-    public void setTags(List<User> tags) { this.tags = tags; }
+    public void setCreatedAt(LocalDateTime createdAt) {
+        this.createdAt = createdAt;
+    }
 
-    public boolean isPublished() { return isPublished; }
-    public void setPublished(boolean published) { isPublished = published; }
+    public void setUpdatedAt(LocalDateTime updatedAt) {
+        this.updatedAt = updatedAt;
+    }
 
-    public LocalDateTime getCreatedAt() { return createdAt; }
-    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+    public String getId() {
+        return id;
+    }
 
-    public LocalDateTime getUpdatedAt() { return updatedAt; }
-    public void setUpdatedAt(LocalDateTime updatedAt) { this.updatedAt = updatedAt; }
+    public String getContentText() {
+        return contentText;
+    }
+
+    public String getContentImage() {
+        return contentImage;
+    }
+
+    public User getAuthor() {
+        return author;
+    }
+
+//    public List<Comment> getComments() {
+//        return comments;
+//    }
+
+    public int getLikes() {
+        return likes;
+    }
+
+    public int getDownloads() {
+        return downloads;
+    }
+
+    public LocalDateTime getCreatedAt() {
+        return createdAt;
+    }
+
+    public LocalDateTime getUpdatedAt() {
+        return updatedAt;
+    }
 
     @Override
     public String toString() {
         return "Post{" +
                 "id='" + id + '\'' +
-                ", title='" + title + '\'' +
                 ", contentText='" + contentText + '\'' +
                 ", contentImage='" + contentImage + '\'' +
-                ", author='" + author + '\'' +
+                ", author=" + author +
+//                ", comments=" + comments +
+                ", likes=" + likes +
+                ", downloads=" + downloads +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
-                ", comments=" + comments +
                 '}';
     }
 }

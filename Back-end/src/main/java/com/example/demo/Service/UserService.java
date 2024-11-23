@@ -138,6 +138,17 @@ public class UserService {
         }
     }
 
+    public String getImageUrl(MultipartFile file) {
+        try {
+            String fileUrl = saveToStorage(file);
+            logger.info("File uploaded successfully. URL: {}", fileUrl);
+            return fileUrl;
+        } catch (Exception e) {
+            logger.error("Error uploading file", e);
+            throw new RuntimeException("Failed to upload file", e);
+        }
+    }
+
     private File saveFileLocally(MultipartFile file) throws IOException {
         // Ensure the temporary directory exists
         Path tempDir = Paths.get(TEMP_DIR);
