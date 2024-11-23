@@ -4,9 +4,12 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,17 +38,22 @@ public class PostController {
     @Autowired
     private ObjectMapper objectMapper;
 
+    private static final Logger logger = LoggerFactory.getLogger(PostController.class);
+
     // Add a new post
     @PostMapping("/add")
     public ResponseEntity<String> createPost(@RequestBody Post post) {
         try {
+            logger.info("Post content text: {}",post.getContentText());
+            logger.info("Post content image: {}",post.getContentImage());
+            logger.info("Post title: {}",post.getTitle());
             post.setCreatedAt(LocalDateTime.now());
             post.setUpdatedAt(LocalDateTime.now());
             post.setViews(0);
             Post savedPost = postRepository.save(post);
             return ResponseEntity.status(HttpStatus.CREATED).body("Saved Post Successfully");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error saving post");
         }
     }
 
@@ -57,11 +65,13 @@ public class PostController {
             comment.setUpdatedAt(LocalDateTime.now());
             comment.setLikes(0);
             Post updatedPost = postService.addComment(postId, comment);
-            return ResponseEntity.ok(updatedPost.toString());
+            return ResponseEntity.ok("Comment added successfully");
         } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid post ID");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding comment");
         }
     }
 
@@ -87,16 +97,33 @@ public class PostController {
 
                 // Update fields
                 post.setTitle(updatedPost.getTitle());
-                post.setContent(updatedPost.getContent());
+                post.setContentText(updatedPost.getContentText());
+                post.setContentImage(updatedPost.getContentImage());
                 post.setUpdatedAt(LocalDateTime.now());
 
                 Post savedPost = postRepository.save(post);
                 return ResponseEntity.ok("Update Post Successfully");
             } else {
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
             }
         } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
         }
     }
+
+    @DeleteMapping("/delete/{postId}")
+    public ResponseEntity<String> deletePost(@PathVariable String postId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postRepository.deleteById(postId);
+                return ResponseEntity.ok("Post deleted successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting post");
+        }
+    }
+
 }
