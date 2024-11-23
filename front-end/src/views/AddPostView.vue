@@ -53,16 +53,43 @@ export default {
             this.uploadedImagePreview = null;
             this.uploadedImageName = '';
         },
-        submitPost() {
+        async submitPost() {
             if (this.postContent.trim() === '') {
                 alert('請輸入貼文內容！');
-            } else if (!this.uploadedImage) {
+                return;
+            }
+            if (!this.uploadedImage) {
                 alert('請上傳一張圖片作為封面！');
-            } else {
-                console.log('貼文內容：', this.postContent);
-                console.log('上傳的圖片：', this.uploadedImage.name);
-                alert('貼文已成功發佈！');
-                this.resetForm();
+                return;
+            }
+
+            try {
+                // 創建 FormData
+                const formData = new FormData();
+                formData.append('content', this.postContent);
+                // formData.append('image', this.uploadedImage);
+
+                // 使用 fetch 發送 POST 請求
+                const response = await fetch('/api/posts/add', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        // 不要設定 Content-Type，瀏覽器會自動添加正確的 boundary
+                    },
+                });
+
+                if (response.ok) {
+                    const result = await response.text();
+                    alert('貼文已成功發佈！');
+                    console.log('伺服器返回：', result);
+                    this.resetForm();
+                } else {
+                    alert('貼文發佈失敗，請稍後再試！');
+                    console.error('伺服器錯誤：', response.statusText);
+                }
+            } catch (error) {
+                console.error('發佈貼文時發生錯誤：', error);
+                alert('發佈貼文時發生錯誤，請稍後再試！');
             }
         },
         resetForm() {

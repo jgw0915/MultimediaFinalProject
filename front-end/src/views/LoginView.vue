@@ -53,6 +53,7 @@ export default {
           if (data.includes("Login successful")) {
             alert("User logged in successfully!");
             localStorage.setItem('userEmail', this.email);
+            localStorage.setItem('isLogin', true);
             this.$router.push('/');
           } else {
             console.error("Login failed:", data);

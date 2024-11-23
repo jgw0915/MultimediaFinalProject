@@ -144,45 +144,26 @@ export default {
         },
       ],
       userProfile: {
-        nickname: "",
-        profileImage: "",
-        profileCover: "",
+        profileImage: "https://via.placeholder.com/80",
+        nickname: "Anonymous",
+        profileCover: "https://via.placeholder.com/300x150",
       },
     };
   },
   methods: {
     async fetchUserProfile() {
       try {
-        // 從 localStorage 獲取 userEmail
         const userEmail = localStorage.getItem("userEmail");
         if (!userEmail) throw new Error("User email is not set in localStorage");
 
-        // 調用後端 API
         const response = await fetch(`/api/getUser?userEmail=${userEmail}`);
-        const result = await response.text();
+        if (!response.ok) throw new Error(`API error: ${response.statusText}`);
 
-        // 解析後端返回的數據
-        const userProfile = this.parseUserProfile(result);
-        if (userProfile) {
-          this.userProfile.nickname = userProfile.nickname;
-          this.userProfile.profileImage = userProfile.profileImage;
-          this.userProfile.profileCover = userProfile.profileCover;
-        }
+        const userProfile = await response.json();
+        this.userProfile = userProfile;
       } catch (error) {
         console.error("Failed to fetch user profile:", error.message);
       }
-    },
-    parseUserProfile(responseText) {
-      const regex = /User\{id='.*?', email='.*?', nickname='(.*?)', password='.*?', profileImage='(.*?)', profileCover='(.*?)'\}/;
-      const match = responseText.match(regex);
-      if (match) {
-        return {
-          nickname: match[1],
-          profileImage: match[2],
-          profileCover: match[3],
-        };
-      }
-      return null;
     },
     likePost(id) {
       const post = this.posts.find((post) => post.id === id);
@@ -191,12 +172,11 @@ export default {
     downloadImage(postId) {
       const post = this.posts.find((p) => p.id === postId);
       if (post && post.image) {
-        // 創建一個隱藏的 a 標籤
         const link = document.createElement("a");
-        link.href = post.image; // 設置圖片的 URL
-        link.download = `post_${postId}.png`; // 設置下載文件名
-        link.click(); // 模擬點擊觸發下載
-        link.remove(); // 清理 DOM 元素
+        link.href = post.image;
+        link.download = `post_${postId}.png`;
+        link.click();
+        link.remove();
       }
     },
     toggleComments(postId) {
@@ -241,6 +221,10 @@ export default {
     },
   },
   async created() {
+    console.log(localStorage.getItem("isLogin"));
+    if (localStorage.getItem("isLogin") == "false") {
+      this.$router.push("/login")
+    }
     await this.fetchUserProfile();
   },
 };
