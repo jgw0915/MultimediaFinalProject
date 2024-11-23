@@ -15,7 +15,6 @@ import com.example.demo.Model.User;
 import com.example.demo.Model.UserImageInsertParam;
 import com.example.demo.Service.UserService;
 
-
 @RestController
 @RequestMapping("/api")
 public class UserController {
@@ -53,7 +52,8 @@ public class UserController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<String> register(@RequestParam String nickname, @RequestParam String password, @RequestParam String email) {
+    public ResponseEntity<String> register(@RequestParam String nickname, @RequestParam String password,
+            @RequestParam String email) {
         try {
             User user = userService.getUserByEmail(email);
             if (user != null) {
@@ -85,13 +85,13 @@ public class UserController {
             // Simulate sending a reset password email
             String msg = userService.sendResetPasswordEmail(email);
 
-            if (msg.startsWith("Email sent successfully")){
+            if (msg.startsWith("Email sent successfully")) {
                 logger.info("Reset password email sent to: {}", email);
                 return ResponseEntity.ok("Reset password email sent successfully.");
-            }
-            else {
+            } else {
                 logger.error("Error sending reset password email to: {}, Error: {}", email, msg);
-                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error sending reset password email.");
+                return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                        .body("Error sending reset password email.");
             }
         } catch (Exception e) {
             logger.error("Error during forgetPassword process for email: {}, Error: {}", email, e.getMessage(), e);
@@ -100,22 +100,22 @@ public class UserController {
     }
 
     @GetMapping("/getUser")
-    public ResponseEntity<String> getUser(@RequestParam String userEmail) {
-        logger.info("Getting user data by email: {}",userEmail);
+    public ResponseEntity<User> getUser(@RequestParam String userEmail) {
+        logger.info("Getting user data by email: {}", userEmail);
 
         try {
             // Check if user exists
             User user = userService.getUserByEmail(userEmail);
             if (user == null) {
                 logger.warn("User not found for email: {}", userEmail);
-                return ResponseEntity.status(404).body("User not found");
+                return ResponseEntity.status(404).body(null);
             }
 
-            return ResponseEntity.ok(user.toString());
+            return ResponseEntity.ok(user);
 
         } catch (Exception e) {
             logger.error("Error during login for email: {}, Error: {}", userEmail, e.getMessage(), e);
-            return ResponseEntity.status(500).body("Internal server error");
+            return ResponseEntity.status(500).body(null);
         }
     }
 
@@ -135,14 +135,15 @@ public class UserController {
             logger.error("Unexpected error during password reset for email: {}, Error: {}", email, e.getMessage(), e);
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Internal server error.");
         }
-    
+
     }
 
     @PostMapping("/saveProfileImage")
     public ResponseEntity<String> saveProfileImage(
             UserImageInsertParam userImageInsertParam) {
         try {
-            String imageUrl = userService.saveProfileImage(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
+            String imageUrl = userService.saveProfileImage(userImageInsertParam.getEmail(),
+                    userImageInsertParam.getImage());
             return ResponseEntity.ok(imageUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());
@@ -155,7 +156,8 @@ public class UserController {
     public ResponseEntity<String> saveProfileCover(
             UserImageInsertParam userImageInsertParam) {
         try {
-            String coverUrl = userService.saveProfileCover(userImageInsertParam.getEmail(), userImageInsertParam.getImage());
+            String coverUrl = userService.saveProfileCover(userImageInsertParam.getEmail(),
+                    userImageInsertParam.getImage());
             return ResponseEntity.ok(coverUrl);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(e.getMessage());

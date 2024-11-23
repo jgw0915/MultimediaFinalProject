@@ -1,27 +1,28 @@
 
 package com.example.demo.Model;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @Document(collection = "User") // Specify the collection name in MongoDB
 public class User {
-    
+
     @Id
     private String id; // Maps to the MongoDB field "_id"
-    
+
     @Field("_email") // Explicitly map to the MongoDB "_email" field
     private String email;
-    
+
     @Field("_nickname") // Explicitly map to the MongoDB "_nickname" field
     private String nickname;
-    
+
     @Field("_password") // Explicitly map to the MongoDB "_password" field
     private String password;
 
     @Field("_profileImage") // Explicitly map to the MongoDB "_nickname" field
     private String profileImage;
-    
+
     @Field("_profileCover") // Explicitly map to the MongoDB "_password" field
     private String profileCover;
 
@@ -60,10 +61,10 @@ public class User {
     }
 
     public String getProfileImage() {
-        return password;
+        return profileImage;
     }
 
-    public void setProfileImage(String profileImage){
+    public void setProfileImage(String profileImage) {
         this.profileImage = profileImage;
     }
 
@@ -71,7 +72,7 @@ public class User {
         return profileCover;
     }
 
-    public void setProfileCover(String profileCover){
+    public void setProfileCover(String profileCover) {
         this.profileCover = profileCover;
     }
 
