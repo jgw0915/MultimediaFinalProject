@@ -11,7 +11,8 @@ public class Post {
     @Id
     private String id;                // Unique ID for the post
     private String title;             // Title of the post
-    private String content;           // Content of the post
+    private String contentText;
+    private String contentImage;          // Content of the post
     private User author;            // Author of the post
     private List<Comment> comments;   // List of comments
     private int views;                // Number of views
@@ -27,8 +28,11 @@ public class Post {
     public String getTitle() { return title; }
     public void setTitle(String title) { this.title = title; }
 
-    public String getContent() { return content; }
-    public void setContent(String content) { this.content = content; }
+    public String getContentText() { return contentText; }
+    public void setContentText(String contentText) { this.contentText = contentText; }
+
+    public String getContentImage() { return contentImage; }
+    public void setContentImage(String contentImage) { this.contentImage = contentImage; }
 
     public User getAuthor() { return author; }
     public void setAuthor(User author) { this.author = author; }
@@ -56,7 +60,8 @@ public class Post {
         return "Post{" +
                 "id='" + id + '\'' +
                 ", title='" + title + '\'' +
-                ", content='" + content + '\'' +
+                ", contentText='" + contentText + '\'' +
+                ", contentImage='" + contentImage + '\'' +
                 ", author='" + author + '\'' +
                 ", createdAt=" + createdAt +
                 ", updatedAt=" + updatedAt +
