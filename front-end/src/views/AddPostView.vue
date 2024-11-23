@@ -138,7 +138,6 @@ export default {
 </script>
 
 <style scoped>
-/* 保持您的原始設計，新增的樣式保持簡潔 */
 * {
     margin: 0;
     padding: 0;
@@ -153,19 +152,6 @@ export default {
     background-color: rgba(144, 189, 231, 0.479);
     background-size: cover;
     background-position: center;
-}
-
-.wrapper {
-    /* width: 800px;
-    height: 620px;
-    background: rgba(144, 189, 231, 0.479);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    color: #000;
-    border-radius: 10px;
-    padding: 30px 40px;
-    text-align: center; */
 }
 
 .wrapper h1 {

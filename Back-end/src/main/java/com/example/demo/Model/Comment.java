@@ -12,7 +12,7 @@ public class Comment {
     private String text;
     private int likes;
     private User user;
-    private int replies;
+    private String replies;
     private LocalDateTime createdAt; // Timestamp
     private LocalDateTime updatedAt; // Last updated timestamp
 
@@ -32,7 +32,7 @@ public class Comment {
         this.user = user;
     }
 
-    public void setReplies(int replies) {
+    public void setReplies(String replies) {
         this.replies = replies;
     }
 
@@ -60,7 +60,7 @@ public class Comment {
         return user;
     }
 
-    public int getReplies() {
+    public String getReplies() {
         return replies;
     }
 

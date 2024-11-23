@@ -13,7 +13,7 @@ public class Post {
     private String contentText;
     private String contentImage;          // Content of the post
     private User author;            // Author of the post
-//    private List<Comment> comments;   // List of comments
+    private List<Comment> comments;   // List of comments
     private int likes;
     private int downloads;
     private LocalDateTime createdAt;  // Post creation timestamp
@@ -35,9 +35,9 @@ public class Post {
         this.author = author;
     }
 
-//    public void setComments(List<Comment> comments) {
-//        this.comments = comments;
-//    }
+    public void setComments(List<Comment> comments) {
+        this.comments = comments;
+    }
 
     public void setLikes(int likes) {
         this.likes = likes;
@@ -71,9 +71,9 @@ public class Post {
         return author;
     }
 
-//    public List<Comment> getComments() {
-//        return comments;
-//    }
+    public List<Comment> getComments() {
+        return comments;
+    }
 
     public int getLikes() {
         return likes;
@@ -98,7 +98,7 @@ public class Post {
                 ", contentText='" + contentText + '\'' +
                 ", contentImage='" + contentImage + '\'' +
                 ", author=" + author +
-//                ", comments=" + comments +
+                ", comments=" + comments +
                 ", likes=" + likes +
                 ", downloads=" + downloads +
                 ", createdAt=" + createdAt +

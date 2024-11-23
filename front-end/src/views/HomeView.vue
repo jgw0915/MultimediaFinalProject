@@ -23,7 +23,7 @@
             <p>{{ post.text }}</p>
             <img :src="post.image" alt="Post image" />
             <div class="interactions">
-              <button @click="likePost(post.id)">Like ({{ post.likes }})</button>
+              <button @click="likePost(post.id, true)">Like ({{ post.likes }})</button>
               <button @click="toggleComments(post.id)">Comment ({{ post.comments }})</button>
               <button @click="downloadImage(post.id)">Download ({{ post.downloads }})</button>
             </div>
@@ -46,6 +46,7 @@
                   <button @click="toggleReplies(comment.id, post.id)">Reply ({{ comment.replies.length
                     }})</button>
                 </div>
+
                 <!-- 回覆區 -->
                 <div v-if="comment.showReplies" class="replies">
                   <div v-for="reply in comment.replies" :key="reply.id" class="reply">
@@ -62,6 +63,14 @@
                         reply.likes }})</button>
                     </div>
                   </div>
+                  <div class="add-comment">
+                    <input v-model="post.newCommentText" type="text" placeholder="Write a reply..." />
+                    <button @click="addComment(post.id, post.newCommentText)">Submit</button>
+                  </div>
+                </div>
+                <div class="add-comment">
+                  <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
+                  <button @click="addComment(post.id, post.newCommentText)">Submit</button>
                 </div>
               </div>
             </div>
@@ -101,6 +110,49 @@ export default {
     };
   },
   methods: {
+    async addComment(postId, commentText) {
+      try {
+        const response = await fetch(`/api/posts/${postId}/comments`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user: {
+              profileImage: this.userProfile.profileImage,
+              nickname: this.userProfile.nickname,
+              profileCover: this.userProfile.profileCover,
+              email: this.userProfile.email,
+            },
+            text: commentText,
+            replies: "",
+          }),
+        });
+        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
+
+        // const newComment = await response.json();
+
+        // 找到對應的文章，並添加新留言
+        // const post = this.posts.find((p) => p.id === postId);
+        // if (post) {
+        //   post.commentList.push({
+        //     id: newComment.id,
+        //     avatar: this.userProfile.profileImage,
+        //     nickname: this.userProfile.nickname,
+        //     text: newComment.text,
+        //     time: new Date(newComment.createdAt).toLocaleString(),
+        //     likes: 0,
+        //     replies: [],
+        //     showReplies: false,
+        //   });
+        //   post.comments++;
+        // }
+      } catch (error) {
+        console.error("Failed to add comment:", error.message);
+        alert("Failed to add comment. Please try again.");
+      }
+    },
+
     async fetchUserProfile() {
       try {
         const userEmail = localStorage.getItem("userEmail");
@@ -175,9 +227,34 @@ export default {
         console.error("Failed to fetch all posts:", error.message);
       }
     },
-    likePost(id) {
-      const post = this.posts.find((post) => post.id === id);
-      if (post) post.likes++;
+    async likePost(id, increase) {
+      try {
+        const response = await fetch(`/api/posts/like/${id}?increase=${increase}`, {
+          method: 'PUT',
+        });
+
+        if (response.ok) {
+          // 更新本地的 likes 數據
+          const post = this.posts.find((post) => post.id === id);
+          if (post) {
+            if (increase) {
+              post.likes++;
+            } else {
+              post.likes--;
+            }
+          }
+          console.log('Post updated successfully');
+        } else {
+          // 處理非 200 的狀態碼
+          const errorText = await response.text();
+          console.error('Error updating post:', errorText);
+          alert(`Error: ${errorText}`);
+        }
+      } catch (error) {
+        // 捕捉網路錯誤或其他異常
+        console.error('Network error:', error);
+        alert('Failed to update post due to a network error.');
+      }
     },
     downloadImage(postId) {
       const post = this.posts.find((p) => p.id === postId);
