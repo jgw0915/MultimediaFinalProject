@@ -60,7 +60,7 @@ public class User {
     }
 
     public String getProfileImage() {
-        return password;
+        return profileImage;
     }
 
     public void setProfileImage(String profileImage){
