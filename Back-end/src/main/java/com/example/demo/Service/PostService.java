@@ -20,10 +20,10 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         if (postOptional.isPresent()) {
             Post post = postOptional.get();
-            comment.setId(null); // Let MongoDB generate the ID
-            comment.setCreatedAt(LocalDateTime.now());
+//            comment.setId(null); // Let MongoDB generate the ID
+//            comment.setCreatedAt(LocalDateTime.now());
             post.getComments().add(comment);
-            post.setUpdatedAt(LocalDateTime.now());
+//            post.setUpdatedAt(LocalDateTime.now());
             return postRepository.save(post);
         } else {
             throw new RuntimeException("Post not found");

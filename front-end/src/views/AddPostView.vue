@@ -99,7 +99,8 @@ export default {
                     "contentImage": newPictureUrl,
                     "author": this.userProfile,
                     "likes": 0,
-                    "downloads": 0
+                    "downloads": 0,
+                    "comments": []
                 };
 
                 const postResponse = await fetch('/api/posts/add', {

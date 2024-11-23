@@ -63,10 +63,10 @@
                         reply.likes }})</button>
                     </div>
                   </div>
-                  <div class="add-comment">
+                  <!-- <div class="add-comment">
                     <input v-model="post.newCommentText" type="text" placeholder="Write a reply..." />
                     <button @click="addComment(post.id, post.newCommentText)">Submit</button>
-                  </div>
+                  </div> -->
                 </div>
                 <div class="add-comment">
                   <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
@@ -128,8 +128,11 @@ export default {
             replies: "",
           }),
         });
-        if (!response.ok) throw new Error(`API Error: ${response.statusText}`);
-
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.statusText}`);
+        } else {
+          await this.fetchAllPosts();
+        }
         // const newComment = await response.json();
 
         // 找到對應的文章，並添加新留言
@@ -183,43 +186,64 @@ export default {
           likes: post.likes,
           downloads: post.downloads,
           comments: 0, // 暫無評論數據，這裡設為 0
-          commentList: [{
-            id: 1,
-            avatar: require("@/assets/kitty.png"),
-            nickname: "Ragdoll",
-            text: "The kitty is super cute!",
-            time: "1 hour ago",
-            likes: 5,
-            replies: [
-              {
-                id: 11,
-                avatar: require("@/assets/kitty.png"),
-                nickname: "Maine Coon Cat",
-                text: "Meow!",
-                time: "1 hour ago",
-                likes: 2,
-              },
-            ],
-          }, {
-            id: 2,
-            avatar: require("@/assets/kitty.png"),
-            nickname: "British Shorthair",
-            text: "Give me more kitties!",
-            time: "1 hour ago",
-            likes: 10,
-            replies: [
-              {
-                id: 21,
-                avatar: require("@/assets/kitty.png"),
-                nickname: "American Shorthair",
-                text: "Everyone, come check out the kitty I drew!",
-                time: "30 minutes ago",
-                likes: 4,
-              },
-            ],
-          },
-          ], // 暫無評論列表，初始化為空
-          showComments: false, // 初始不顯示評論區
+
+          commentList: post.comments.map(comment => ({
+            id: comment.id,
+            avatar: comment.user.profileImage || "https://via.placeholder.com/50",
+            nickname: comment.user.nickname || "Anonymous",
+            text: comment.text,
+            time: new Date(comment.createdAt).toLocaleString(),
+            likes: comment.likes || 0,
+            replies: comment.replies
+              ? comment.replies.map(reply => ({
+                id: reply._id,
+                avatar: reply.user._profileImage || "https://via.placeholder.com/50",
+                nickname: reply.user._nickname || "Anonymous",
+                text: reply.text,
+                time: new Date(reply.createdAt).toLocaleString(),
+                likes: reply.likes || 0,
+              }))
+              : [],
+            showReplies: false, // 初始不顯示回覆
+          })),
+
+          // commentList: [{
+          //   id: 1,
+          //   avatar: require("@/assets/kitty.png"),
+          //   nickname: "Ragdoll",
+          //   text: "The kitty is super cute!",
+          //   time: "1 hour ago",
+          //   likes: 5,
+          //   replies: [
+          //     {
+          //       id: 11,
+          //       avatar: require("@/assets/kitty.png"),
+          //       nickname: "Maine Coon Cat",
+          //       text: "Meow!",
+          //       time: "1 hour ago",
+          //       likes: 2,
+          //     },
+          //   ],
+          // }, {
+          //   id: 2,
+          //   avatar: require("@/assets/kitty.png"),
+          //   nickname: "British Shorthair",
+          //   text: "Give me more kitties!",
+          //   time: "1 hour ago",
+          //   likes: 10,
+          //   replies: [
+          //     {
+          //       id: 21,
+          //       avatar: require("@/assets/kitty.png"),
+          //       nickname: "American Shorthair",
+          //       text: "Everyone, come check out the kitty I drew!",
+          //       time: "30 minutes ago",
+          //       likes: 4,
+          //     },
+          //   ],
+          // },
+          // ], 
+          showComments: false,
         }));
 
 
