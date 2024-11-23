@@ -41,6 +41,7 @@ public class PostController {
         try {
             post.setCreatedAt(LocalDateTime.now());
             post.setUpdatedAt(LocalDateTime.now());
+            post.setViews(0);
             Post savedPost = postRepository.save(post);
             return ResponseEntity.status(HttpStatus.CREATED).body("Saved Post Successfully");
         } catch (Exception e) {
@@ -52,6 +53,9 @@ public class PostController {
     @PostMapping("/{postId}/comments")
     public ResponseEntity<String> addComment(@PathVariable String postId, @RequestBody Comment comment) {
         try {
+            comment.setCreatedAt(LocalDateTime.now());
+            comment.setUpdatedAt(LocalDateTime.now());
+            comment.setLikes(0);
             Post updatedPost = postService.addComment(postId, comment);
             return ResponseEntity.ok(updatedPost.toString());
         } catch (IllegalArgumentException e) {

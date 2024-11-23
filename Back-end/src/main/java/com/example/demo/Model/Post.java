@@ -15,7 +15,7 @@ public class Post {
     private User author;            // Author of the post
     private List<Comment> comments;   // List of comments
     private int views;                // Number of views
-    private List<String> tags;        // Tags associated with the post
+    private List<User> tags;        // Tags associated with the post
     private boolean isPublished;      // Whether the post is published
     private LocalDateTime createdAt;  // Post creation timestamp
     private LocalDateTime updatedAt;  // Post update timestamp
@@ -39,8 +39,8 @@ public class Post {
     public int getViews() { return views; }
     public void setViews(int views) { this.views = views; }
 
-    public List<String> getTags() { return tags; }
-    public void setTags(List<String> tags) { this.tags = tags; }
+    public List<User> getTags() { return tags; }
+    public void setTags(List<User> tags) { this.tags = tags; }
 
     public boolean isPublished() { return isPublished; }
     public void setPublished(boolean published) { isPublished = published; }
