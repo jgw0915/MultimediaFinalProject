@@ -12,7 +12,7 @@ public class Post {
     private String id;                // Unique ID for the post
     private String title;             // Title of the post
     private String content;           // Content of the post
-    private String author;            // Author of the post
+    private User author;            // Author of the post
     private List<Comment> comments;   // List of comments
     private int views;                // Number of views
     private List<String> tags;        // Tags associated with the post
@@ -30,8 +30,8 @@ public class Post {
     public String getContent() { return content; }
     public void setContent(String content) { this.content = content; }
 
-    public String getAuthor() { return author; }
-    public void setAuthor(String author) { this.author = author; }
+    public User getAuthor() { return author; }
+    public void setAuthor(User author) { this.author = author; }
 
     public List<Comment> getComments() { return comments; }
     public void setComments(List<Comment> comments) { this.comments = comments; }
