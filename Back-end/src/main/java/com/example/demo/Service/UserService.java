@@ -48,6 +48,8 @@ public class UserService {
         user.setNickname(nickname);
         user.setPassword(password); // Hash the password in production
         user.setEmail(email);
+        user.setProfileImage("null");
+        user.setProfileCover("null");
         userRepository.save(user);
 
         logger.info("User saved successfully.");
