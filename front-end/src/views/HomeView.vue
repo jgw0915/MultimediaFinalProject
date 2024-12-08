@@ -83,12 +83,11 @@
           <p>{{ userProfile.nickname }}</p>
         </div>
         <div class="actions">
-          <button class="enterDrawingAreaBtn" @click="enterDrawingArea">Enter Drawing Area</button>
           <button class="collectFeedbackBtn" @click="collectFeedback">User Feedback Collection</button>
         </div>
       </div>
     </div>
-    <button class="floating-button" @click="addNewPost">+</button>
+    <button class="floating-button" @click="enterDrawingArea">+</button>
   </div>
 </template>
 
@@ -519,6 +518,7 @@ body {
 .right-sidebar .actions .collectFeedbackBtn {
   margin-top: 50px;
   font-size: 1.2em;
+  width: 60%;
 
 }
 
