@@ -31,6 +31,10 @@
             <!-- 留言區 -->
             <div v-if="post.showComments" class="comments-section">
               <h4>All comments</h4>
+              <div class="add-comment">
+                <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
+                <button @click="addComment(post.id, post.newCommentText)">Submit</button>
+              </div>
               <div v-for="comment in post.commentList" :key="comment.id" class="comment">
                 <div class="comment-header">
                   <img :src="comment.avatar" alt="User Avatar" />
@@ -68,10 +72,7 @@
                     <button @click="addComment(post.id, post.newCommentText)">Submit</button>
                   </div> -->
                 </div>
-                <div class="add-comment">
-                  <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
-                  <button @click="addComment(post.id, post.newCommentText)">Submit</button>
-                </div>
+
               </div>
             </div>
           </div>
@@ -185,7 +186,7 @@ export default {
           image: post.contentImage,
           likes: post.likes,
           downloads: post.downloads,
-          comments: 0, // 暫無評論數據，這裡設為 0
+          comments: post.comments.length,
 
           commentList: post.comments.map(comment => ({
             id: comment.id,
@@ -280,7 +281,7 @@ export default {
         alert('Failed to update post due to a network error.');
       }
     },
-    downloadImage(postId) {
+    async downloadImage(postId) {
       const post = this.posts.find((p) => p.id === postId);
       if (post && post.image) {
         const link = document.createElement("a");
@@ -288,6 +289,26 @@ export default {
         link.download = `post_${postId}.png`;
         link.click();
         link.remove();
+        try {
+          const response = await fetch(`/api/posts/download/${postId}`, {
+            method: 'PUT',
+          });
+
+          if (response.ok) {
+            post.download++;
+
+            console.log('Post updated successfully');
+          } else {
+            // 處理非 200 的狀態碼
+            const errorText = await response.text();
+            console.error('Error updating post:', errorText);
+            alert(`Error: ${errorText}`);
+          }
+        } catch (error) {
+          // 捕捉網路錯誤或其他異常
+          console.error('Network error:', error);
+          alert('Failed to update post due to a network error.');
+        }
       }
     },
     toggleComments(postId) {

@@ -42,6 +42,18 @@ public class PostService {
         }
     }
 
+    public void increaseDownloads(String postId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.setDownloads(post.getDownloads() + 1);
+            post.setUpdatedAt(LocalDateTime.now());
+            postRepository.save(post);
+        } else {
+            throw new RuntimeException("Post not found");
+        }
+    }
+
     public void decreaseLike(String postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         if (postOptional.isPresent()) {

@@ -37,8 +37,8 @@ public class PostController {
     @PostMapping("/add")
     public ResponseEntity<String> createPost(@RequestBody Post post) {
         try {
-            logger.info("Post content text: {}",post.getContentText());
-            logger.info("Post content image: {}",post.getContentImage());
+            logger.info("Post content text: {}", post.getContentText());
+            logger.info("Post content image: {}", post.getContentImage());
             post.setCreatedAt(LocalDateTime.now());
             post.setUpdatedAt(LocalDateTime.now());
             Post savedPost = postRepository.save(post);
@@ -111,6 +111,21 @@ public class PostController {
                 } else {
                     postService.decreaseLike(postId);
                 }
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
+    @PutMapping("/download/{postId}")
+    public ResponseEntity<String> updateDownloads(@PathVariable String postId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseDownloads(postId);
                 return ResponseEntity.ok("Updated Post Successfully");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
