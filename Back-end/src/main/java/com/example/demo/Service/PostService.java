@@ -50,6 +50,17 @@ public class PostService {
         }
     }
 
+    public void increaseReplyLike(String postId, int commentId, int replyId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.getComments().get(commentId).getReplies().get(replyId).setLikes(post.getComments().get(commentId).getReplies().get(replyId).getLikes() + 1);
+            postRepository.save(post);
+        } else {
+            throw new RuntimeException("Post not found");
+        }
+    }
+
     public void increaseLike(String postId) {
         Optional<Post> postOptional = postRepository.findById(postId);
         if (postOptional.isPresent()) {

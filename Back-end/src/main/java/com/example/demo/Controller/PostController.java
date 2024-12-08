@@ -153,6 +153,21 @@ public class PostController {
         }
     }
 
+    @PutMapping("/likeReply/{postId}")
+    public ResponseEntity<String> updateLike(@PathVariable String postId, @RequestParam int commentId, @RequestParam int replyId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseReplyLike(postId, commentId, replyId);
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
     @PutMapping("/download/{postId}")
     public ResponseEntity<String> updateDownloads(@PathVariable String postId) {
         try {

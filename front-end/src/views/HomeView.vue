@@ -57,7 +57,7 @@
 
                 <!-- 回覆區 -->
                 <div v-if="comment.showReplies" class="replies">
-                  <div v-for="reply in comment.replies" :key="reply.id" class="reply">
+                  <div v-for="(reply, replyIndex) in comment.replies" :key="reply.id" class="reply">
                     <div class="reply-header">
                       <img :src="reply.avatar" alt="User Avatar" />
                       <div>
@@ -67,7 +67,7 @@
                     </div>
                     <p>{{ reply.text }}</p>
                     <div class="reply-actions">
-                      <button @click="likeReply(post.id, comment.id, reply.id)">Like ({{
+                      <button @click="likeReply(post.id, commentIndex, replyIndex, reply)">Like ({{
                         reply.likes }})</button>
                     </div>
                   </div>
@@ -316,11 +316,24 @@ export default {
       const comment = post?.commentList.find((c) => c.id === commentId);
       if (comment) comment.showReplies = !comment.showReplies;
     },
-    likeReply(postId, commentId, replyId) {
-      const post = this.posts.find((p) => p.id === postId);
-      const comment = post?.commentList.find((c) => c.id === commentId);
-      const reply = comment?.replies.find((r) => r.id === replyId);
-      if (reply) reply.likes++;
+    async likeReply(postId, commentIndex, replyIndex, reply) {
+      try {
+        const response = await fetch(`/api/posts/likeReply/${postId}?commentId=${commentIndex}&replyId=${replyIndex}`, {
+          method: 'PUT',
+        });
+
+        if (response.ok) {
+          reply.likes++
+          console.log('Post updated successfully');
+        } else {
+          const errorText = await response.text();
+          console.error('Error updating post:', errorText);
+          alert(`Error: ${errorText}`);
+        }
+      } catch (error) {
+        console.error('Network error:', error);
+        alert('Failed to update post due to a network error.');
+      }
     },
     enterDrawingArea() {
       this.$router.push("/drawingArea");
