@@ -31,7 +31,11 @@
             <!-- 留言區 -->
             <div v-if="post.showComments" class="comments-section">
               <h4>All comments</h4>
-              <div v-for="comment in post.commentList" :key="comment.id" class="comment">
+              <div class="add-comment">
+                <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
+                <button @click="addComment(post.id, post.newCommentText)">Submit</button>
+              </div>
+              <div v-for="(comment, commentIndex) in post.commentList" :key="comment.id" class="comment">
                 <div class="comment-header">
                   <img :src="comment.avatar" alt="User Avatar" />
                   <div>
@@ -41,15 +45,19 @@
                 </div>
                 <p>{{ comment.text }}</p>
                 <div class="comment-actions">
-                  <button @click="likeComment(post.id, comment.id)">Like ({{ comment.likes
+                  <button @click="likeComment(post.id, comment, commentIndex)">Like ({{ comment.likes
                     }})</button>
                   <button @click="toggleReplies(comment.id, post.id)">Reply ({{ comment.replies.length
                     }})</button>
                 </div>
+                <div class="add-reply">
+                  <input v-model="post.replyInput[commentIndex]" type="text" placeholder="Write a reply..." />
+                  <button @click="addReply(post.id, post.replyInput[commentIndex], commentIndex)">Submit</button>
+                </div>
 
                 <!-- 回覆區 -->
                 <div v-if="comment.showReplies" class="replies">
-                  <div v-for="reply in comment.replies" :key="reply.id" class="reply">
+                  <div v-for="(reply, replyIndex) in comment.replies" :key="reply.id" class="reply">
                     <div class="reply-header">
                       <img :src="reply.avatar" alt="User Avatar" />
                       <div>
@@ -59,18 +67,10 @@
                     </div>
                     <p>{{ reply.text }}</p>
                     <div class="reply-actions">
-                      <button @click="likeReply(post.id, comment.id, reply.id)">Like ({{
+                      <button @click="likeReply(post.id, commentIndex, replyIndex, reply)">Like ({{
                         reply.likes }})</button>
                     </div>
                   </div>
-                  <!-- <div class="add-comment">
-                    <input v-model="post.newCommentText" type="text" placeholder="Write a reply..." />
-                    <button @click="addComment(post.id, post.newCommentText)">Submit</button>
-                  </div> -->
-                </div>
-                <div class="add-comment">
-                  <input v-model="post.newCommentText" type="text" placeholder="Write a comment..." />
-                  <button @click="addComment(post.id, post.newCommentText)">Submit</button>
                 </div>
               </div>
             </div>
@@ -110,7 +110,42 @@ export default {
     };
   },
   methods: {
+    async addReply(postId, replyText, commentIndex) {
+      if (!replyText) {
+        alert("請輸入文字!");
+        return;
+      }
+      try {
+        const response = await fetch(`/api/posts/${postId}/reply?commentId=${commentIndex}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            user: {
+              profileImage: this.userProfile.profileImage,
+              nickname: this.userProfile.nickname,
+              profileCover: this.userProfile.profileCover,
+              email: this.userProfile.email,
+            },
+            text: replyText,
+          }),
+        });
+        if (!response.ok) {
+          throw new Error(`API Error: ${response.statusText}`);
+        } else {
+          await this.fetchAllPosts();
+        }
+      } catch (error) {
+        console.error("Failed to add reply:", error.message);
+        alert("Failed to add reply. Please try again.");
+      }
+    },
     async addComment(postId, commentText) {
+      if (!commentText) {
+        alert("請輸入文字!");
+        return;
+      }
       try {
         const response = await fetch(`/api/posts/${postId}/comments`, {
           method: 'POST',
@@ -133,29 +168,11 @@ export default {
         } else {
           await this.fetchAllPosts();
         }
-        // const newComment = await response.json();
-
-        // 找到對應的文章，並添加新留言
-        // const post = this.posts.find((p) => p.id === postId);
-        // if (post) {
-        //   post.commentList.push({
-        //     id: newComment.id,
-        //     avatar: this.userProfile.profileImage,
-        //     nickname: this.userProfile.nickname,
-        //     text: newComment.text,
-        //     time: new Date(newComment.createdAt).toLocaleString(),
-        //     likes: 0,
-        //     replies: [],
-        //     showReplies: false,
-        //   });
-        //   post.comments++;
-        // }
       } catch (error) {
         console.error("Failed to add comment:", error.message);
         alert("Failed to add comment. Please try again.");
       }
     },
-
     async fetchUserProfile() {
       try {
         const userEmail = localStorage.getItem("userEmail");
@@ -185,8 +202,11 @@ export default {
           image: post.contentImage,
           likes: post.likes,
           downloads: post.downloads,
-          comments: 0, // 暫無評論數據，這裡設為 0
-
+          comments: post.comments.length,
+          replyInput: post.comments.reduce((acc, comment) => {
+            acc[comment.id] = ""; // 初始化每個 comment 的 replyText 為空
+            return acc;
+          }, {}),
           commentList: post.comments.map(comment => ({
             id: comment.id,
             avatar: comment.user.profileImage || "https://via.placeholder.com/50",
@@ -204,46 +224,9 @@ export default {
                 likes: reply.likes || 0,
               }))
               : [],
-            showReplies: false, // 初始不顯示回覆
+            showReplies: true,
           })),
-
-          // commentList: [{
-          //   id: 1,
-          //   avatar: require("@/assets/kitty.png"),
-          //   nickname: "Ragdoll",
-          //   text: "The kitty is super cute!",
-          //   time: "1 hour ago",
-          //   likes: 5,
-          //   replies: [
-          //     {
-          //       id: 11,
-          //       avatar: require("@/assets/kitty.png"),
-          //       nickname: "Maine Coon Cat",
-          //       text: "Meow!",
-          //       time: "1 hour ago",
-          //       likes: 2,
-          //     },
-          //   ],
-          // }, {
-          //   id: 2,
-          //   avatar: require("@/assets/kitty.png"),
-          //   nickname: "British Shorthair",
-          //   text: "Give me more kitties!",
-          //   time: "1 hour ago",
-          //   likes: 10,
-          //   replies: [
-          //     {
-          //       id: 21,
-          //       avatar: require("@/assets/kitty.png"),
-          //       nickname: "American Shorthair",
-          //       text: "Everyone, come check out the kitty I drew!",
-          //       time: "30 minutes ago",
-          //       likes: 4,
-          //     },
-          //   ],
-          // },
-          // ], 
-          showComments: false,
+          showComments: true,
         }));
 
 
@@ -258,7 +241,6 @@ export default {
         });
 
         if (response.ok) {
-          // 更新本地的 likes 數據
           const post = this.posts.find((post) => post.id === id);
           if (post) {
             if (increase) {
@@ -269,18 +251,16 @@ export default {
           }
           console.log('Post updated successfully');
         } else {
-          // 處理非 200 的狀態碼
           const errorText = await response.text();
           console.error('Error updating post:', errorText);
           alert(`Error: ${errorText}`);
         }
       } catch (error) {
-        // 捕捉網路錯誤或其他異常
         console.error('Network error:', error);
         alert('Failed to update post due to a network error.');
       }
     },
-    downloadImage(postId) {
+    async downloadImage(postId) {
       const post = this.posts.find((p) => p.id === postId);
       if (post && post.image) {
         const link = document.createElement("a");
@@ -288,27 +268,72 @@ export default {
         link.download = `post_${postId}.png`;
         link.click();
         link.remove();
+        try {
+          const response = await fetch(`/api/posts/download/${postId}`, {
+            method: 'PUT',
+          });
+
+          if (response.ok) {
+            post.download++;
+
+            console.log('Post updated successfully');
+          } else {
+            const errorText = await response.text();
+            console.error('Error updating post:', errorText);
+            alert(`Error: ${errorText}`);
+          }
+        } catch (error) {
+          console.error('Network error:', error);
+          alert('Failed to update post due to a network error.');
+        }
       }
     },
     toggleComments(postId) {
       const post = this.posts.find((p) => p.id === postId);
       if (post) post.showComments = !post.showComments;
     },
-    likeComment(postId, commentId) {
-      const post = this.posts.find((p) => p.id === postId);
-      const comment = post?.commentList.find((c) => c.id === commentId);
-      if (comment) comment.likes++;
+    async likeComment(postId, comment, commentIndex) {
+      try {
+        const response = await fetch(`/api/posts/likeComment/${postId}?commentId=${commentIndex}`, {
+          method: 'PUT',
+        });
+
+        if (response.ok) {
+          comment.likes++
+          console.log('Post updated successfully');
+        } else {
+          const errorText = await response.text();
+          console.error('Error updating post:', errorText);
+          alert(`Error: ${errorText}`);
+        }
+      } catch (error) {
+        console.error('Network error:', error);
+        alert('Failed to update post due to a network error.');
+      }
     },
     toggleReplies(commentId, postId) {
       const post = this.posts.find((p) => p.id === postId);
       const comment = post?.commentList.find((c) => c.id === commentId);
       if (comment) comment.showReplies = !comment.showReplies;
     },
-    likeReply(postId, commentId, replyId) {
-      const post = this.posts.find((p) => p.id === postId);
-      const comment = post?.commentList.find((c) => c.id === commentId);
-      const reply = comment?.replies.find((r) => r.id === replyId);
-      if (reply) reply.likes++;
+    async likeReply(postId, commentIndex, replyIndex, reply) {
+      try {
+        const response = await fetch(`/api/posts/likeReply/${postId}?commentId=${commentIndex}&replyId=${replyIndex}`, {
+          method: 'PUT',
+        });
+
+        if (response.ok) {
+          reply.likes++
+          console.log('Post updated successfully');
+        } else {
+          const errorText = await response.text();
+          console.error('Error updating post:', errorText);
+          alert(`Error: ${errorText}`);
+        }
+      } catch (error) {
+        console.error('Network error:', error);
+        alert('Failed to update post due to a network error.');
+      }
     },
     enterDrawingArea() {
       this.$router.push("/drawingArea");

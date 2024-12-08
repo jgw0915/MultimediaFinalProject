@@ -38,6 +38,7 @@
           </div>
         </div>
         <p class="post-content">{{ post.content }}</p>
+        <img v-if="post.contentImage" :src="post.contentImage" alt="Post Image" class="post-image" />
       </div>
     </div>
   </div>
@@ -51,21 +52,36 @@ export default {
         nickname: "",
         profileImage: "",
         profileCover: "",
+        email: "",
       },
-      posts: [
-        {
-          id: 1,
-          user: "Meow",
-          userPicture: require("@/assets/kitty.png"),
-          time: "2 hours ago",
-          content: "This is a post content example.",
-          showOptions: false,
-        },
-      ],
+      posts: [],
       uploadTarget: "",
     };
   },
   methods: {
+    async fetchUserProfileAndPosts() {
+      const email = this.userProfile.email;
+      const url = `/api/posts/getByEmail?email=${email}`;
+      try {
+        const response = await fetch(url);
+        if (response.ok) {
+          const data = await response.json();
+          this.posts = data.map((post) => ({
+            id: post.id,
+            user: post.author.nickname,
+            userPicture: post.author.profileImage,
+            time: new Date(post.updatedAt).toLocaleString(),
+            content: post.contentText,
+            contentImage: post.contentImage,
+            showOptions: false,
+          }));
+        } else {
+          console.error("Failed to fetch posts:", await response.text());
+        }
+      } catch (error) {
+        console.error("Error fetching posts:", error);
+      }
+    },
     triggerFileInput(target) {
       this.uploadTarget = target;
       this.$refs.fileInput.click();
@@ -130,6 +146,7 @@ export default {
   },
   created() {
     this.userProfile = this.$route.query;
+    this.fetchUserProfileAndPosts();
   },
 };
 </script>
@@ -225,6 +242,12 @@ body {
 .posts {
   margin: 20px auto;
   width: 60%;
+}
+
+.post-image {
+  max-width: 100%;
+  border-radius: 5px;
+  margin-top: 10px;
 }
 
 .posts h3 {

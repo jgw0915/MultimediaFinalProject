@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo.Model.Reply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -46,8 +47,8 @@ public class PostController {
     @PostMapping("/add")
     public ResponseEntity<String> createPost(@RequestBody Post post) {
         try {
-            logger.info("Post content text: {}",post.getContentText());
-            logger.info("Post content image: {}",post.getContentImage());
+            logger.info("Post content text: {}", post.getContentText());
+            logger.info("Post content image: {}", post.getContentImage());
             post.setCreatedAt(LocalDateTime.now());
             post.setUpdatedAt(LocalDateTime.now());
             Post savedPost = postRepository.save(post);
@@ -75,6 +76,23 @@ public class PostController {
         }
     }
 
+    @PostMapping("/{postId}/reply")
+    public ResponseEntity<String> addReply(@PathVariable String postId, @RequestBody Reply reply, @RequestParam int commentId) {
+        try {
+            reply.setCreatedAt(LocalDateTime.now());
+            reply.setUpdatedAt(LocalDateTime.now());
+            reply.setLikes(0);
+            Post updatedPost = postService.addReply(postId, reply, commentId);
+            return ResponseEntity.ok("Comment added successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid post ID");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding comment");
+        }
+    }
+
     // Get all posts
     @GetMapping("/getAll")
     public ResponseEntity<String> getAllPosts() {
@@ -88,6 +106,20 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error processing JSON response.");
         } catch (Exception e) {
             logger.error("Unexpected error retrieving posts: {}", e.getMessage(), e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving posts.");
+        }
+    }
+
+    @GetMapping("/getByEmail")
+    public ResponseEntity<String> getPostsByEmail(@RequestParam String email) {
+        try {
+            List<Post> posts = postRepository.findByAuthor_Email(email);
+            if (posts.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No posts found for the given email.");
+            }
+            String jsonResponse = objectMapper.writeValueAsString(posts);
+            return ResponseEntity.ok(jsonResponse);
+        } catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving posts.");
         }
     }
@@ -134,6 +166,51 @@ public class PostController {
         }
     }
 
+    @PutMapping("/likeComment/{postId}")
+    public ResponseEntity<String> updateLike(@PathVariable String postId, @RequestParam int commentId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseCommentLike(postId, commentId);
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
+    @PutMapping("/likeReply/{postId}")
+    public ResponseEntity<String> updateLike(@PathVariable String postId, @RequestParam int commentId, @RequestParam int replyId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseReplyLike(postId, commentId, replyId);
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
+    @PutMapping("/download/{postId}")
+    public ResponseEntity<String> updateDownloads(@PathVariable String postId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseDownloads(postId);
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
     @DeleteMapping("/delete/{postId}")
     public ResponseEntity<String> deletePost(@PathVariable String postId) {
         try {
@@ -148,5 +225,4 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting post");
         }
     }
-
 }
