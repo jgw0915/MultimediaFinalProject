@@ -97,7 +97,7 @@ export default {
     async uploadProfilePicture(file) {
       const formData = new FormData();
       formData.append('image', file);
-      formData.append('email', "test");
+      formData.append('email', this.userProfile.email);
       let url = "";
       if (this.uploadTarget === "cover") {
         url = "/api/saveProfileCover";
