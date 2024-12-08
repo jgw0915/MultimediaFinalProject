@@ -336,7 +336,15 @@ export default {
       }
     },
     enterDrawingArea() {
-      this.$router.push("/drawingArea");
+      this.$router.push({
+        path: "/drawingArea",
+        query: {
+          nickname: this.userProfile.nickname,
+          profileImage: this.userProfile.profileImage,
+          profileCover: this.userProfile.profileCover,
+          email: this.userProfile.email,
+        },
+      });
     },
     collectFeedback() {
       this.$router.push("/userFeedback");

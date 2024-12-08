@@ -46,6 +46,12 @@
 export default {
     data() {
         return {
+            userProfile: {
+                email: "",
+                nickname: "",
+                profileImage: "",
+                profileCover: "",
+            },
             postContent: '', // 貼文內容
             canvas: null,
             ctx: null,
@@ -554,6 +560,11 @@ export default {
                 return;
             }
 
+            if (this.userProfile === null) {
+                alert('請先登入！');
+                return;
+            }
+
             try {
                 const postFormData = {
                     "contentText": this.postContent,
@@ -595,6 +606,9 @@ export default {
     },
     mounted() {
         this.initializeCanvas();
+    },
+    created() {
+        this.userProfile = this.$route.query;
     },
 };
 </script>
