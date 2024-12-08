@@ -4,7 +4,6 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-import com.example.demo.Model.Reply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -22,8 +21,11 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.demo.Model.Comment;
 import com.example.demo.Model.Post;
+import com.example.demo.Model.Reply;
+import com.example.demo.Model.User;
 import com.example.demo.Repository.PostRepository;
 import com.example.demo.Service.PostService;
+import com.example.demo.Service.UserService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -34,6 +36,9 @@ public class PostController {
 
     @Autowired
     private PostService postService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private PostRepository postRepository;
@@ -98,6 +103,19 @@ public class PostController {
     public ResponseEntity<String> getAllPosts() {
         try {
             List<Post> posts = postRepository.findAll();
+            posts.forEach(p -> {
+                logger.info("user email: {}", p.getAuthor().getEmail());
+                User author = userService.getUserByEmail(p.getAuthor().getEmail());
+                p.setAuthor(author);
+                p.getComments().forEach(c -> {
+                    User user = userService.getUserByEmail(c.getUser().getEmail());
+                    c.setUser(user);
+                    c.getReplies().forEach(r -> {
+                        User replyUser = userService.getUserByEmail(r.getUser().getEmail());
+                        r.setUser(replyUser);
+                    });
+                });
+            });
             logger.info("Retrieved {} posts", posts.size());
             logger.info("Posts: {}", posts);
             return ResponseEntity.ok(objectMapper.writeValueAsString(posts));
@@ -113,10 +131,23 @@ public class PostController {
     @GetMapping("/getByEmail")
     public ResponseEntity<String> getPostsByEmail(@RequestParam String email) {
         try {
+            logger.info("Getting posts for email: {}", email);
             List<Post> posts = postRepository.findByAuthor_Email(email);
             if (posts.isEmpty()) {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No posts found for the given email.");
             }
+            posts.forEach(p -> {
+                User author = userService.getUserByEmail(p.getAuthor().getEmail());
+                p.setAuthor(author);
+                p.getComments().forEach(c -> {
+                    User user = userService.getUserByEmail(c.getUser().getEmail());
+                    c.setUser(user);
+                    c.getReplies().forEach(r -> {
+                        User replyUser = userService.getUserByEmail(r.getUser().getEmail());
+                        r.setUser(replyUser);
+                    });
+                });
+            });
             String jsonResponse = objectMapper.writeValueAsString(posts);
             return ResponseEntity.ok(jsonResponse);
         } catch (Exception e) {

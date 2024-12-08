@@ -61,6 +61,10 @@ export default {
   methods: {
     async fetchUserProfileAndPosts() {
       const email = this.userProfile.email;
+      if (!email) {
+        console.error("User email is empty");
+        return;
+      }
       const url = `/api/posts/getByEmail?email=${email}`;
       try {
         const response = await fetch(url);
@@ -167,10 +171,23 @@ export default {
         return { ...post, showOptions: false };
       });
     },
+    async fetchUserProfile(userEmail) {
+      try {
+        if (!userEmail) throw new Error("User email cannot be empty");
+
+        const response = await fetch(`/api/getUser?userEmail=${userEmail}`);
+        if (!response.ok) throw new Error(`API error: ${response.statusText}`);
+
+        const userProfile = await response.json();
+        this.userProfile = userProfile;
+        this.fetchUserProfileAndPosts();
+      } catch (error) {
+        console.error("Failed to fetch user profile:", error.message);
+      }
+    },
   },
   created() {
-    this.userProfile = this.$route.query;
-    this.fetchUserProfileAndPosts();
+    this.fetchUserProfile(this.$route.query.email);
   },
 };
 </script>

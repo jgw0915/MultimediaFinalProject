@@ -352,9 +352,6 @@ export default {
       this.$router.push({
         path: '/profile',
         query: {
-          nickname: this.userProfile.nickname,
-          profileImage: this.userProfile.profileImage,
-          profileCover: this.userProfile.profileCover,
           email: this.userProfile.email,
         },
       }
