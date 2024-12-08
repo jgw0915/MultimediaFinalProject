@@ -129,7 +129,15 @@ public class PostController {
                 postRepository.save(p);
             });
             logger.info("Retrieved {} posts", posts.size());
-            logger.info("Posts: {}", posts);
+            posts.forEach(p -> {
+                logger.info("Post: {}", p.toString());
+                p.getComments().forEach(c -> {
+                    logger.info("Comment: {}", c.toString());
+                    c.getReplies().forEach(r -> {
+                        logger.info("Reply: {}", r.toString());
+                    });
+                });
+            });
             return ResponseEntity.ok(objectMapper.writeValueAsString(posts));
         } catch (JsonProcessingException e) {
             logger.error("Error serializing posts: {}", e.getMessage(), e);
@@ -172,6 +180,16 @@ public class PostController {
                     });
                 }
                 postRepository.save(p);
+            });
+            logger.info("Retrieved {} posts", posts.size());
+            posts.forEach(p -> {
+                logger.info("Post: {}", p.toString());
+                p.getComments().forEach(c -> {
+                    logger.info("Comment: {}", c.toString());
+                    c.getReplies().forEach(r -> {
+                        logger.info("Reply: {}", r.toString());
+                    });
+                });
             });
             String jsonResponse = objectMapper.writeValueAsString(posts);
             return ResponseEntity.ok(jsonResponse);

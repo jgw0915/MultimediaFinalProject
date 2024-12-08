@@ -1,9 +1,9 @@
 package com.example.demo.Model;
 
+import java.time.LocalDateTime;
+
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
-
-import java.time.LocalDateTime;
 
 @Document
 public class Reply {
@@ -62,5 +62,17 @@ public class Reply {
 
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
+    }
+
+    @Override
+    public String toString() {
+        return "Reply{" +
+                "id='" + id + '\'' +
+                ", text='" + text + '\'' +
+                ", likes=" + likes +
+                ", user=" + user +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
     }
 }

@@ -74,4 +74,16 @@ public class Comment {
     public LocalDateTime getUpdatedAt() {
         return updatedAt;
     }
+
+    @Override
+    public String toString() {
+        return "Comment{" +
+                "id='" + id + '\'' +
+                ", text='" + text + '\'' +
+                ", likes=" + likes +
+                ", user=" + user +
+                ", createdAt=" + createdAt +
+                ", updatedAt=" + updatedAt +
+                '}';
+    }
 }
