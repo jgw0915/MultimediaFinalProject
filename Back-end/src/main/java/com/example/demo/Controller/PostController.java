@@ -104,17 +104,28 @@ public class PostController {
         try {
             List<Post> posts = postRepository.findAll();
             posts.forEach(p -> {
-                logger.info("user email: {}", p.getAuthor().getEmail());
                 User author = userService.getUserByEmail(p.getAuthor().getEmail());
-                p.setAuthor(author);
-                p.getComments().forEach(c -> {
-                    User user = userService.getUserByEmail(c.getUser().getEmail());
-                    c.setUser(user);
-                    c.getReplies().forEach(r -> {
-                        User replyUser = userService.getUserByEmail(r.getUser().getEmail());
-                        r.setUser(replyUser);
+                if (author == null) {
+                    logger.warn("User not found for email: {}", p.getAuthor().getEmail());
+                }else{
+                    p.setAuthor(author);
+                    p.getComments().forEach(c -> {
+                        User user = userService.getUserByEmail(c.getUser().getEmail());
+                        if (user == null) {
+                            logger.warn("User not found for email: {}", c.getUser().getEmail());
+                        }else{
+                            c.setUser(user);
+                            c.getReplies().forEach(r -> {
+                                User replyUser = userService.getUserByEmail(r.getUser().getEmail());
+                                if (replyUser == null) {
+                                    logger.warn("User not found for email: {}", r.getUser().getEmail());
+                                }else{
+                                r.setUser(replyUser);
+                                }
+                            });
+                        }
                     });
-                });
+                }
             });
             logger.info("Retrieved {} posts", posts.size());
             logger.info("Posts: {}", posts);
@@ -138,15 +149,27 @@ public class PostController {
             }
             posts.forEach(p -> {
                 User author = userService.getUserByEmail(p.getAuthor().getEmail());
-                p.setAuthor(author);
-                p.getComments().forEach(c -> {
-                    User user = userService.getUserByEmail(c.getUser().getEmail());
-                    c.setUser(user);
-                    c.getReplies().forEach(r -> {
-                        User replyUser = userService.getUserByEmail(r.getUser().getEmail());
-                        r.setUser(replyUser);
+                if (author == null) {
+                    logger.warn("User not found for email: {}", p.getAuthor().getEmail());
+                }else{
+                    p.setAuthor(author);
+                    p.getComments().forEach(c -> {
+                        User user = userService.getUserByEmail(c.getUser().getEmail());
+                        if (user == null) {
+                            logger.warn("User not found for email: {}", c.getUser().getEmail());
+                        }else{
+                            c.setUser(user);
+                            c.getReplies().forEach(r -> {
+                                User replyUser = userService.getUserByEmail(r.getUser().getEmail());
+                                if (replyUser == null) {
+                                    logger.warn("User not found for email: {}", r.getUser().getEmail());
+                                }else{
+                                r.setUser(replyUser);
+                                }
+                            });
+                        }
                     });
-                });
+                }
             });
             String jsonResponse = objectMapper.writeValueAsString(posts);
             return ResponseEntity.ok(jsonResponse);
