@@ -159,7 +159,7 @@ export default {
               email: this.userProfile.email,
             },
             text: commentText,
-            replies: "",
+            replies: [],
           }),
         });
         if (!response.ok) {

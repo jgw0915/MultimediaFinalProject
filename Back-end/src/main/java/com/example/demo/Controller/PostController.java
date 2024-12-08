@@ -126,6 +126,7 @@ public class PostController {
                         }
                     });
                 }
+                postRepository.save(p);
             });
             logger.info("Retrieved {} posts", posts.size());
             logger.info("Posts: {}", posts);
@@ -170,6 +171,7 @@ public class PostController {
                         }
                     });
                 }
+                postRepository.save(p);
             });
             String jsonResponse = objectMapper.writeValueAsString(posts);
             return ResponseEntity.ok(jsonResponse);
