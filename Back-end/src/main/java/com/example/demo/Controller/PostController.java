@@ -4,6 +4,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
+import com.example.demo.Model.Reply;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -66,6 +67,23 @@ public class PostController {
         }
     }
 
+    @PostMapping("/{postId}/reply")
+    public ResponseEntity<String> addReply(@PathVariable String postId, @RequestBody Reply reply, @RequestParam int commentId) {
+        try {
+            reply.setCreatedAt(LocalDateTime.now());
+            reply.setUpdatedAt(LocalDateTime.now());
+            reply.setLikes(0);
+            Post updatedPost = postService.addReply(postId, reply, commentId);
+            return ResponseEntity.ok("Comment added successfully");
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Invalid post ID");
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not found");
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error adding comment");
+        }
+    }
+
     // Get all posts
     @GetMapping("/getAll")
     public ResponseEntity<String> getAllPosts() {
@@ -111,6 +129,21 @@ public class PostController {
                 } else {
                     postService.decreaseLike(postId);
                 }
+                return ResponseEntity.ok("Updated Post Successfully");
+            } else {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");
+            }
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error updating post");
+        }
+    }
+
+    @PutMapping("/likeComment/{postId}")
+    public ResponseEntity<String> updateLike(@PathVariable String postId, @RequestParam int commentId) {
+        try {
+            Optional<Post> postOptional = postRepository.findById(postId);
+            if (postOptional.isPresent()) {
+                postService.increaseCommentLike(postId, commentId);
                 return ResponseEntity.ok("Updated Post Successfully");
             } else {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Post not Found");

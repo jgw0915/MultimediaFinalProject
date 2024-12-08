@@ -3,6 +3,7 @@ package com.example.demo.Service;
 import java.time.LocalDateTime;
 import java.util.Optional;
 
+import com.example.demo.Model.Reply;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,11 +21,30 @@ public class PostService {
         Optional<Post> postOptional = postRepository.findById(postId);
         if (postOptional.isPresent()) {
             Post post = postOptional.get();
-//            comment.setId(null); // Let MongoDB generate the ID
-//            comment.setCreatedAt(LocalDateTime.now());
             post.getComments().add(comment);
-//            post.setUpdatedAt(LocalDateTime.now());
             return postRepository.save(post);
+        } else {
+            throw new RuntimeException("Post not found");
+        }
+    }
+
+    public Post addReply(String postId, Reply reply, int commentId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.getComments().get(commentId).getReplies().add(reply);
+            return postRepository.save(post);
+        } else {
+            throw new RuntimeException("Post not found");
+        }
+    }
+
+    public void increaseCommentLike(String postId, int commentId) {
+        Optional<Post> postOptional = postRepository.findById(postId);
+        if (postOptional.isPresent()) {
+            Post post = postOptional.get();
+            post.getComments().get(commentId).setLikes(post.getComments().get(commentId).getLikes() + 1);
+            postRepository.save(post);
         } else {
             throw new RuntimeException("Post not found");
         }
