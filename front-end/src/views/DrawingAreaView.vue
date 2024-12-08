@@ -3,11 +3,8 @@
         <div>
             <!-- <h2 class="title-box">繪畫區</h2> -->
             <div class="canvas-container">
-                <canvas ref="canvas" class="drawing-canvas" 
-                        @mousedown="startDrawing" 
-                        @mousemove="draw" 
-                        @mouseup="stopDrawing" 
-                        @mouseleave="stopDrawing"></canvas>
+                <canvas ref="canvas" class="drawing-canvas" @mousedown="startDrawing" @mousemove="draw"
+                    @mouseup="stopDrawing" @mouseleave="stopDrawing"></canvas>
             </div>
         </div>
         <div class="tools">
@@ -537,10 +534,10 @@ export default {
                 const blob = await new Promise(resolve => {
                     this.canvas.toBlob(resolve, 'image/png');
                 });
-                
+
                 const imageFormData = new FormData();
                 imageFormData.append('image', blob, 'drawing.png'); // 添加 blob 並指定檔名
-                
+
                 const imageResponse = await fetch("/api/getImageUrl", {
                     method: 'POST',
                     body: imageFormData,
@@ -551,12 +548,12 @@ export default {
                 } else {
                     const errorMessage = await imageResponse.text();
                     console.error(errorMessage);
-                    alert(`圖片上傳失敗：${errorMessage}`);
+                    alert(`Image upload failed:${errorMessage}`);
                     return;
                 }
             } catch (error) {
-                console.error('圖片上傳過程中發生錯誤：', error);
-                alert('圖片上傳過程中發生錯誤，請稍後再試！');
+                console.error('An error occurred during the image upload process:', error);
+                alert('An error occurred during the image upload process. Please try again later!');
                 return;
             }
 
@@ -658,13 +655,16 @@ export default {
     cursor: pointer;
     border: 1px solid #ccc;
 }
+
 .post-area {
     flex: 1;
     padding: 20px;
     max-width: 600px;
     margin-left: 20px;
-    background-color: #fff; /* Background for AddPostView area */
+    background-color: #fff;
+    /* Background for AddPostView area */
 }
+
 .inputBox {
     width: 100%;
     margin: 20px 0;
@@ -688,9 +688,11 @@ export default {
 }
 
 .title-box {
-    border: 2px solid black; /* Black border */
-    padding: 10px; /* Padding inside the box */
-    display: inline-block; /* Ensure the box fits the content */
+    border: 2px solid black;
+    /* Black border */
+    padding: 10px;
+    /* Padding inside the box */
+    display: inline-block;
+    /* Ensure the box fits the content */
 }
-
 </style>

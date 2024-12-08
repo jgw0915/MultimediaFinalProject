@@ -32,7 +32,7 @@
           <div class="post-options">
             <button class="post-options-button" @click="togglePostOptions(post.id)">...</button>
             <div v-if="post.showOptions" class="post-options-menu">
-              <button @click="editPost(post.id)">Edit</button>
+              <button @click="editPost(post.id, post.content, post.contentImage)">Edit</button>
               <button @click="deletePost(post.id)">Delete</button>
             </div>
           </div>
@@ -128,12 +128,36 @@ export default {
         alert('An error occurred while uploading the profile picture.');
       }
     },
-    editPost(postId) {
-      alert(`Editing post with ID: ${postId}`);
+    editPost(postId, content, image) {
+      this.$router.push({
+        path: "/editPost",
+        query: {
+          id: postId,
+          content: content,
+          image: image,
+        },
+      });
     },
     deletePost(postId) {
-      this.posts = this.posts.filter((post) => post.id !== postId);
-      alert(`Deleted post with ID: ${postId}`);
+      if (confirm("Are you sure you want to delete this post?")) {
+        fetch(`/api/posts/delete/${postId}`, {
+          method: "DELETE",
+        })
+          .then((response) => {
+            if (response.ok) {
+              this.posts = this.posts.filter((post) => post.id !== postId);
+              alert(`Post with ID: ${postId} deleted successfully!`);
+            } else {
+              return response.text().then((text) => {
+                throw new Error(`Failed to delete post: ${text}`);
+              });
+            }
+          })
+          .catch((error) => {
+            console.error("Error deleting post:", error);
+            alert("An error occurred while deleting the post.");
+          });
+      }
     },
     togglePostOptions(postId) {
       this.posts = this.posts.map((post) => {
