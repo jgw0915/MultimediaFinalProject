@@ -96,6 +96,20 @@ public class PostController {
         }
     }
 
+    @GetMapping("/getByEmail")
+    public ResponseEntity<String> getPostsByEmail(@RequestParam String email) {
+        try {
+            List<Post> posts = postRepository.findByAuthor_Email(email);
+            if (posts.isEmpty()) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body("No posts found for the given email.");
+            }
+            String jsonResponse = objectMapper.writeValueAsString(posts);
+            return ResponseEntity.ok(jsonResponse);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error retrieving posts.");
+        }
+    }
+
     // Update an existing post
     @PutMapping("/update/{postId}")
     public ResponseEntity<String> updatePost(@PathVariable String postId, @RequestBody Post updatedPost) {
@@ -197,5 +211,4 @@ public class PostController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error deleting post");
         }
     }
-
 }
