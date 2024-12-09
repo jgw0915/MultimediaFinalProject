@@ -104,33 +104,114 @@ export default {
 
 
 <style scoped>
+/* General styling for the container */
+div {
+    font-family: 'Arial', sans-serif;
+    color: #333;
+}
+
+/* Center the form and add padding */
 form {
     max-width: 600px;
-    margin: auto;
+    margin: 50px auto;
+    padding: 20px;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    background-color: #f9f9f9;
     display: flex;
     flex-direction: column;
-    gap: 15px;
+    gap: 20px;
 }
 
-textarea {
+/* Header styling */
+h1 {
+    text-align: center;
+    font-size: 28px;
+    color: #007bff;
+    margin-bottom: 20px;
+}
+
+/* Labels and inputs styling */
+label {
+    font-weight: bold;
+    font-size: 16px;
+    color: #555;
+}
+
+textarea,
+input[type="file"] {
     width: 100%;
     padding: 10px;
-    font-size: 16px;
-    border: 1px solid #ddd;
+    font-size: 14px;
+    border: 1px solid #ccc;
     border-radius: 5px;
+    background-color: #fff;
+    resize: none;
+    transition: border-color 0.3s ease-in-out;
 }
 
+textarea:focus,
+input[type="file"]:focus {
+    border-color: #007bff;
+    outline: none;
+}
+
+/* Image preview container */
+img {
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    margin-top: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons styling */
 button {
-    padding: 10px 20px;
+    padding: 12px 20px;
     font-size: 16px;
-    background-color: #007bff;
-    color: white;
+    font-weight: bold;
     border: none;
     border-radius: 5px;
     cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+button[type="submit"] {
+    background-color: #007bff;
+    color: white;
+}
+
+button[type="submit"]:hover {
+    background-color: #0056b3;
+}
+
+button[type="button"] {
+    background-color: #6c757d;
+    color: white;
+}
+
+button[type="button"]:hover {
+    background-color: #5a6268;
 }
 
 button:hover {
-    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+/* Responsive design for mobile */
+@media (max-width: 768px) {
+    form {
+        padding: 15px;
+    }
+
+    textarea,
+    input[type="file"] {
+        font-size: 14px;
+    }
+
+    button {
+        font-size: 14px;
+        padding: 10px 15px;
+    }
 }
 </style>

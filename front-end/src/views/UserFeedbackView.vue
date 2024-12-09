@@ -33,81 +33,99 @@ export default {
 </script>
 
 <style scoped>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-}
-
+/* General body styling */
 .body {
     display: flex;
     justify-content: center;
     align-items: center;
-    min-height: 100vh;
-    background-color: rgba(144, 189, 231, 0.479);
-    background-size: cover;
-    background-position: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+    font-family: 'Arial', sans-serif;
+    color: #333;
 }
 
+/* Wrapper container */
 .wrapper {
-    width: 420px;
-    background: rgba(144, 189, 231, 0.479);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(20px);
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.2);
-    color: #000;
+    width: 100%;
+    max-width: 600px;
+    padding: 30px;
+    background-color: #fff;
     border-radius: 10px;
-    padding: 30px 40px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     text-align: center;
 }
 
+/* Heading styling */
 .wrapper h1 {
     font-size: 24px;
     margin-bottom: 20px;
-    color: #333;
+    color: #007bff;
 }
 
+/* Input box styling */
 .inputBox {
-    width: 100%;
-    margin: 20px 0;
+    margin-bottom: 20px;
 }
 
 .inputBox textarea {
-    width: 100%;
+    width: 80%;
     height: 150px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 2px solid rgba(255, 255, 255, 0.2);
-    border-radius: 10px;
     padding: 15px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
     font-size: 16px;
-    color: #333;
-    outline: none;
     resize: none;
+    background-color: #f9f9f9;
+    transition: border-color 0.3s ease-in-out, box-shadow 0.3s ease-in-out;
 }
 
-.inputBox textarea::placeholder {
-    color: #aaa;
-}
-
-.wrapper .button {
-    margin-top: 15px;
-    width: 100%;
-    height: 45px;
-    background-color: #fff;
-    border: none;
+.inputBox textarea:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
     outline: none;
-    border-radius: 40px;
-    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    font-size: 16px;
-    color: #333;
-    font-weight: 600;
-    text-align: center;
-    transition: 0.3s;
 }
 
-.wrapper .button:hover {
-    background-color: dimgrey;
-    color: #fff;
+/* Button styling */
+.button {
+    padding: 10px 20px;
+    font-size: 16px;
+    font-weight: bold;
+    color: white;
+    background-color: #007bff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+
+.button:hover {
+    background-color: #0056b3;
+    transform: scale(1.05);
+}
+
+.button:active {
+    background-color: #003d82;
+    transform: scale(1);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+    .wrapper {
+        padding: 20px;
+    }
+
+    .wrapper h1 {
+        font-size: 20px;
+    }
+
+    .inputBox textarea {
+        font-size: 14px;
+        height: 120px;
+    }
+
+    .button {
+        font-size: 14px;
+        padding: 8px 15px;
+    }
 }
 </style>
