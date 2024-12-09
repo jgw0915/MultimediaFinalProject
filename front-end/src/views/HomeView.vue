@@ -216,8 +216,8 @@ export default {
             replies: comment.replies
               ? comment.replies.map(reply => ({
                 id: reply._id,
-                avatar: reply.user._profileImage || "https://via.placeholder.com/50",
-                nickname: reply.user._nickname || "Anonymous",
+                avatar: reply.user.profileImage || "https://via.placeholder.com/50",
+                nickname: reply.user.nickname || "Anonymous",
                 text: reply.text,
                 time: new Date(reply.createdAt).toLocaleString(),
                 likes: reply.likes || 0,

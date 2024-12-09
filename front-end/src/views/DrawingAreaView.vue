@@ -1,25 +1,24 @@
 <template>
     <div class="drawing-app">
         <div>
-            <!-- <h2 class="title-box">繪畫區</h2> -->
             <div class="canvas-container">
                 <canvas ref="canvas" class="drawing-canvas" @mousedown="startDrawing" @mousemove="draw"
                     @mouseup="stopDrawing" @mouseleave="stopDrawing"></canvas>
             </div>
         </div>
         <div class="tools">
-            <!-- <h2 class="title-box">工具箱</h2> -->
             <div class="tool-buttons">
-                <button @click="selectTool('pencil')">✏️ 畫筆</button>
-                <button @click="selectTool('eraser')">🧹 橡皮擦</button>
-                <button @click="addText">🔤 文字</button>
-                <button @click="selectTool('selector')">👆 選取</button>
+                <button @click="selectTool('pencil')">✏️ Pencil</button>
+                <button @click="selectTool('eraser')">🧹 Eraser</button>
+                <button @click="addText">🔤 Add Text</button>
+                <button @click="selectTool('selector')">👆 Selector</button>
+                <button @click="addWatermark">🌊 Add Watermark</button>
             </div>
 
             <div class="shape-buttons">
-                <button @click="selectTool('circle')">⚪ 圓形</button>
-                <button @click="selectTool('rectangle')">▭ 矩形</button>
-                <button @click="selectTool('line')">➖ 線條</button>
+                <button @click="selectTool('circle')">⚪ Circle</button>
+                <button @click="selectTool('rectangle')">▭ Rectangle</button>
+                <button @click="selectTool('line')">➖ Line</button>
             </div>
 
             <div class="colors">
@@ -28,13 +27,12 @@
             </div>
 
             <input type="file" accept="image/*" @change="selectImage" />
-            <button @click="downloadCanvas">下載</button>
+            <button @click="downloadCanvas">Download</button>
             <div class="inputBox">
-                <textarea v-model="postContent" placeholder="分享您的心情或故事吧！"></textarea>
+                <textarea v-model="postContent" placeholder="Share your thoughts or story!"></textarea>
             </div>
-            <button class="button" @click="submitPost">發佈</button>
+            <button class="button" @click="submitPost">Post</button>
         </div>
-
     </div>
 </template>
 
@@ -513,6 +511,34 @@ export default {
 
                 // 打印日志以确认加载
                 console.log('Image loading started:', file.name);
+            }
+        },
+        addWatermark() {
+            const watermarkText = prompt("請輸入浮水印文字：", "Watermark"); // 提供彈窗讓用戶輸入浮水印文字
+            if (watermarkText) {
+                const fontSize = 40;
+                this.ctx.font = `${fontSize}px Arial`;
+                this.ctx.fillStyle = "rgba(175, 175, 175, 0.5)";
+                this.ctx.textAlign = "right";
+                this.ctx.textBaseline = "bottom";
+
+                // 計算浮水印文字的位置（右下角）
+                const x = this.canvas.width - 10; // 右邊留 10px
+                const y = this.canvas.height - 10; // 底部留 10px
+
+                // 在畫布上繪製浮水印文字
+                this.ctx.fillText(watermarkText, x, y);
+
+                // 將浮水印作為物件保存
+                const watermarkObject = {
+                    type: "text",
+                    x,
+                    y: y - fontSize, // 浮水印的頂部位置
+                    text: watermarkText,
+                    color: "rgba(0, 0, 0, 0.5)",
+                    font: `${fontSize}px Arial`,
+                };
+                this.objects.push(watermarkObject);
             }
         },
         downloadCanvas() {
