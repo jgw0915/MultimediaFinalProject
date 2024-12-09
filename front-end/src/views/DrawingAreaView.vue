@@ -121,7 +121,7 @@ export default {
                 this.objects.push(newObject);
                 this.selectedObject = newObject;
             } else if (this.tool === 'selector') {
-                if (this.selectedObject && this.selectedObject.type === 'line') {
+                if (this.selectedObject) {
                     const handleIndex = this.isOverResizeHandle(x, y, this.selectedObject);
                     if (handleIndex !== -1) {
                         this.isResizing = true;
@@ -152,6 +152,8 @@ export default {
                 this.selectedObject.x2 = x;
                 this.selectedObject.y2 = y;
                 this.redrawCanvas();
+            }else if (this.drawing && this.selectedObject) {
+                this.resizeObject(x, y);
             } else if (this.tool === 'selector') {
                 if (this.isDragging && this.selectedObject) {
                     this.dragObject(x, y);
@@ -178,7 +180,7 @@ export default {
                 const dx = x - this.selectedObject.x;
                 const dy = y - this.selectedObject.y;
                 this.selectedObject.radius = Math.sqrt(dx * dx + dy * dy);
-            } else if (this.selectedObject.type === 'pencil') {
+            } else if (this.selectedObject.type === 'line') {
                 this.selectedObject.x2 = x;
                 this.selectedObject.y2 = y;
             }
@@ -356,6 +358,7 @@ export default {
         },
         drawObject(object) {
             this.ctx.strokeStyle = object.color;
+            this.ctx.fillStyle = object.color;
 
             if (object.type === 'line') {
                 // 繪製線條
@@ -382,6 +385,17 @@ export default {
                         object.height
                     );
                 }
+            }else if (object.type === 'pencil' && object.path) {
+                // 繪製線條
+                this.ctx.beginPath();
+                object.path.forEach((point, index) => {
+                    if (index === 0) {
+                        this.ctx.moveTo(point.x, point.y);
+                    } else {
+                        this.ctx.lineTo(point.x, point.y);
+                    }
+                });
+                this.ctx.stroke();
             }
         },
         drawSelection(object) {
@@ -458,8 +472,14 @@ export default {
             });
         },
         isInsideObject(x, y, object) {
-            if (object.type === 'rectangle') {
-                return x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height;
+            if (object.type === 'rectangle' || object.type === 'pencil') {
+                // 確保位置和大小為正值
+                const startX = Math.min(object.x, object.x + object.width);
+                const startY = Math.min(object.y, object.y + object.height);
+                const endX = Math.max(object.x, object.x + object.width);
+                const endY = Math.max(object.y, object.y + object.height);
+
+                return x >= startX && x <= endX && y >= startY && y <= endY;
             } else if (object.type === 'circle') {
                 const dx = x - object.x;
                 const dy = y - object.y;
