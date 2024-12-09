@@ -88,49 +88,53 @@ export default {
             const { x, y } = this.getMousePosition(event);
 
             if (this.tool === 'pencil') {
-                // 画笔工具逻辑
                 this.drawing = true;
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, y);
-                this.currentLine = [{ x, y }]; // 初始化当前线条坐标
+                this.currentLine = [{ x, y }];
             } else if (this.tool === 'eraser') {
-                // 橡皮擦工具逻辑
                 this.drawing = true;
                 this.ctx.beginPath();
                 this.ctx.moveTo(x, y);
-            } else if (['rectangle', 'circle', 'line'].includes(this.tool)) {
-                // 矩形、圆形、线条工具逻辑
+            } else if (this.tool === 'line') {
+                // 初始化 line 物件
+                this.drawing = true;
+                const newLine = {
+                    type: 'line',
+                    x, // 起始點 x
+                    y, // 起始點 y
+                    x2: x, // 終點 x（初始化為起點）
+                    y2: y, // 終點 y（初始化為起點）
+                    color: this.selectedColor,
+                };
+                this.objects.push(newLine);
+                this.selectedObject = newLine;
+            } else if (['rectangle', 'circle'].includes(this.tool)) {
                 this.drawing = true;
                 const newObject = {
                     type: this.tool,
                     x,
                     y,
                     color: this.selectedColor,
-                    ...(this.tool === 'line' ? { x2: x, y2: y } : { width: 0, height: 0 }),
-                    ...(this.tool === 'circle' ? { radius: 0 } : {}),
+                    ...(this.tool === 'circle' ? { radius: 0 } : { width: 0, height: 0 }),
                 };
                 this.objects.push(newObject);
                 this.selectedObject = newObject;
             } else if (this.tool === 'selector') {
-                // 选择工具逻辑
-                if (this.selectedObject) {
+                if (this.selectedObject && this.selectedObject.type === 'line') {
                     const handleIndex = this.isOverResizeHandle(x, y, this.selectedObject);
                     if (handleIndex !== -1) {
-                        // 点击调整点，进入调整大小模式
                         this.isResizing = true;
-                        this.resizeHandleIndex = handleIndex; // 保存调整点索引
+                        this.resizeHandleIndex = handleIndex; // 保存點擊的是起始點還是終點
                         return;
                     }
                 }
 
-                // 检查是否点击了对象
                 this.selectedObject = this.objects.find((obj) => this.isInsideObject(x, y, obj));
                 if (this.selectedObject) {
-                    // 点击对象，进入拖动模式
                     this.isDragging = true;
                     this.dragStart = { x, y };
                 } else {
-                    // 点击空白区域，取消选中
                     this.selectedObject = null;
                 }
                 this.redrawCanvas();
@@ -143,8 +147,11 @@ export default {
                 this.drawWithPencil(x, y);
             } else if (this.tool === 'eraser' && this.drawing) {
                 this.eraseAt(x, y);
-            } else if (this.drawing && this.selectedObject) {
-                this.resizeObject(x, y);
+            } else if (this.tool === 'line' && this.drawing && this.selectedObject) {
+                // 更新線條的終點
+                this.selectedObject.x2 = x;
+                this.selectedObject.y2 = y;
+                this.redrawCanvas();
             } else if (this.tool === 'selector') {
                 if (this.isDragging && this.selectedObject) {
                     this.dragObject(x, y);
@@ -171,7 +178,7 @@ export default {
                 const dx = x - this.selectedObject.x;
                 const dy = y - this.selectedObject.y;
                 this.selectedObject.radius = Math.sqrt(dx * dx + dy * dy);
-            } else if (this.selectedObject.type === 'line') {
+            } else if (this.selectedObject.type === 'pencil') {
                 this.selectedObject.x2 = x;
                 this.selectedObject.y2 = y;
             }
@@ -192,7 +199,7 @@ export default {
                 const dx = x - object.x;
                 const dy = y - object.y;
                 object.radius = Math.sqrt(dx * dx + dy * dy); // 根據鼠標位置調整半徑
-            } else if (object.type === 'rectangle' || object.type === 'image' || object.type === 'line') {
+            } else if (object.type === 'rectangle' || object.type === 'image' || object.type === 'pencil') {
                 const initialWidth = object.width || 1; // 確保 width 不為 0
                 const initialHeight = object.height || 1;
 
@@ -241,6 +248,17 @@ export default {
 
                 // 調整物件內容
                 this.scaleObjectContent(object, scaleX, scaleY);
+            }else if (object.type === 'line') {
+                if (this.resizeHandleIndex === 0) {
+                    // 調整起始點
+                    object.x = x;
+                    object.y = y;
+                } else if (this.resizeHandleIndex === 1) {
+                    // 調整終點
+                    object.x2 = x;
+                    object.y2 = y;
+                }
+                this.redrawCanvas();
             }
 
             // 防止縮放到負值
@@ -256,7 +274,7 @@ export default {
                 // 水平鏡像：對 X 軸進行翻轉
                 if (object.type === 'rectangle' || object.type === 'image') {
                     // 矩形和圖片：無需額外處理，座標已調整
-                } else if (object.type === 'line') {
+                } else if (object.type === 'pencil') {
                     // 線條：反轉 x1 和 x2
                     const x2 = object.x + object.width;
                     object.x = x2;
@@ -266,7 +284,7 @@ export default {
                 // 垂直鏡像：對 Y 軸進行翻轉
                 if (object.type === 'rectangle' || object.type === 'image') {
                     // 矩形和圖片：無需額外處理，座標已調整
-                } else if (object.type === 'line') {
+                } else if (object.type === 'pencil') {
                     // 線條：反轉 y1 和 y2
                     const y2 = object.y + object.height;
                     object.y = y2;
@@ -283,7 +301,7 @@ export default {
             if (object.type === 'circle') {
                 // 圆形：半径按比例缩放
                 object.radius *= Math.max(scaleX, scaleY); // 保持比例
-            } else if (object.type === 'line') {
+            } else if (object.type === 'pencil') {
                 // 线条：缩放路径中的每个点
                 object.path = object.path.map(point => ({
                     x: object.x + (point.x - object.x) * scaleX,
@@ -299,13 +317,15 @@ export default {
         stopDrawing() {
             if (this.drawing && this.tool === 'pencil') {
                 this.ctx.closePath();
-                this.addLineToObjects(); // 將線條轉換為物件
+                this.addLineToObjects();
+            } else if (this.drawing && this.tool === 'line') {
+                // 結束繪製線條
+                this.selectedObject = null; // 清除選中狀態
             }
             this.drawing = false;
 
-            // 停止拖動狀態，但保留選取的物件
             if (this.tool === 'selector') {
-                this.isResizing = false; // 停止调整大小
+                this.isResizing = false;
                 this.isDragging = false;
                 this.redrawCanvas();
             }
@@ -322,7 +342,7 @@ export default {
                 const maxY = Math.max(...yValues);
 
                 const lineObject = {
-                    type: 'line', // 線條物件
+                    type: 'pencil', // 線條物件
                     path: [...this.currentLine], // 完整的路徑
                     x: minX,
                     y: minY,
@@ -336,38 +356,23 @@ export default {
         },
         drawObject(object) {
             this.ctx.strokeStyle = object.color;
-            this.ctx.fillStyle = object.color;
 
-            if (object.type === 'line' && object.path) {
+            if (object.type === 'line') {
                 // 繪製線條
                 this.ctx.beginPath();
-                object.path.forEach((point, index) => {
-                    if (index === 0) {
-                        this.ctx.moveTo(point.x, point.y);
-                    } else {
-                        this.ctx.lineTo(point.x, point.y);
-                    }
-                });
+                this.ctx.moveTo(object.x, object.y);
+                this.ctx.lineTo(object.x2, object.y2);
                 this.ctx.stroke();
             } else if (object.type === 'rectangle') {
-                // 繪製矩形
                 this.ctx.fillRect(object.x, object.y, object.width, object.height);
             } else if (object.type === 'circle') {
-                // 繪製圓形
                 this.ctx.beginPath();
                 this.ctx.arc(object.x, object.y, object.radius, 0, Math.PI * 2);
                 this.ctx.fill();
             } else if (object.type === 'text') {
-                // 繪製文字
                 this.ctx.font = object.font;
-                this.ctx.textBaseline = 'top';
-                this.ctx.fillText(
-                    object.text,
-                    object.x,
-                    object.y
-                );
+                this.ctx.fillText(object.text, object.x, object.y);
             } else if (object.type === 'image') {
-                // 繪製圖片
                 if (object.img.complete) {
                     this.ctx.drawImage(
                         object.img,
@@ -376,17 +381,6 @@ export default {
                         object.width,
                         object.height
                     );
-                } else {
-                    // 確保圖片加載完成後再繪製
-                    object.img.onload = () => {
-                        this.ctx.drawImage(
-                            object.img,
-                            object.x,
-                            object.y,
-                            object.width,
-                            object.height
-                        );
-                    };
                 }
             }
         },
@@ -409,7 +403,7 @@ export default {
                 this.ctx.strokeRect(object.x, object.y, object.width, object.height);
                 this.drawCornerHandles(object);
             }
-            else if (object.type === 'line') {
+            else if (object.type === 'pencil') {
                 this.ctx.strokeRect(object.x, object.y, object.width, object.height);
                 this.drawCornerHandles(object);
             }
@@ -419,6 +413,23 @@ export default {
                 const height = parseInt(object.font, 10); // 從字體大小獲取高度
                 this.ctx.strokeRect(object.x, object.y - height, width, height);
                 this.drawCornerHandles({ ...object, width, height }); // 處理文字大小
+            }else if (object.type === 'line') {
+                // 繪製線條的起始點和終點的白點
+                this.ctx.fillStyle = 'white';
+                this.ctx.strokeStyle = 'black';
+                const radius = 5;
+
+                // 起始點
+                this.ctx.beginPath();
+                this.ctx.arc(object.x, object.y, radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
+
+                // 終點
+                this.ctx.beginPath();
+                this.ctx.arc(object.x2, object.y2, radius, 0, Math.PI * 2);
+                this.ctx.fill();
+                this.ctx.stroke();
             }
         },
         drawCornerHandles(object) {
@@ -453,21 +464,66 @@ export default {
                 const dx = x - object.x;
                 const dy = y - object.y;
                 return dx * dx + dy * dy <= object.radius * object.radius;
-            } else if (object.type === 'line' && object.path) {
-                const { x: minX, y: minY, width, height } = object;
-                return x >= minX && x <= minX + width && y >= minY && y <= minY + height;
+            } else if (object.type === 'line') {
+                // 檢查點是否接近線條
+                const distance = this.getDistanceToLineSegment(
+                    { x: object.x, y: object.y }, // 起始點
+                    { x: object.x2, y: object.y2 }, // 終點
+                    { x, y } // 滑鼠點擊的座標
+                );
+                return distance <= 5; // 判斷距離是否在 5 像素內
             } else if (object.type === 'text') {
                 const metrics = this.ctx.measureText(object.text);
                 const width = metrics.width;
                 const height = parseInt(object.font, 10);
                 return x >= object.x && x <= object.x + width && y >= object.y - height && y <= object.y;
             } else if (object.type === 'image') {
-                // 图片的选取逻辑
                 return x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height;
             }
             return false;
         },
+        getDistanceToLineSegment(start, end, point) {
+            const { x: x1, y: y1 } = start;
+            const { x: x2, y: y2 } = end;
+            const { x: px, y: py } = point;
+
+            // 計算線段的平方長度
+            const lineLengthSquared = (x2 - x1) ** 2 + (y2 - y1) ** 2;
+
+            if (lineLengthSquared === 0) {
+                // 線段的起點和終點重合
+                return Math.sqrt((px - x1) ** 2 + (py - y1) ** 2);
+            }
+
+            // 計算點在線段上的投影比例（t 的範圍是 [0, 1]）
+            let t = ((px - x1) * (x2 - x1) + (py - y1) * (y2 - y1)) / lineLengthSquared;
+            t = Math.max(0, Math.min(1, t)); // 限制 t 的範圍在 [0, 1]
+
+            // 計算投影點的座標
+            const projectionX = x1 + t * (x2 - x1);
+            const projectionY = y1 + t * (y2 - y1);
+
+            // 返回點到投影點的距離
+            return Math.sqrt((px - projectionX) ** 2 + (py - projectionY) ** 2);
+        },
         isOverResizeHandle(x, y, object) {
+            const radius = 5;
+
+            if (object.type === 'line') {
+                // 檢查是否點擊到起始點
+                const dx1 = x - object.x;
+                const dy1 = y - object.y;
+                if (dx1 * dx1 + dy1 * dy1 <= radius * radius) {
+                    return 0; // 起始點索引
+                }
+
+                // 檢查是否點擊到終點
+                const dx2 = x - object.x2;
+                const dy2 = y - object.y2;
+                if (dx2 * dx2 + dy2 * dy2 <= radius * radius) {
+                    return 1; // 終點索引
+                }
+            }
             const corners = [
                 { x: object.x, y: object.y }, // 左上角
                 { x: object.x + object.width, y: object.y }, // 右上角
@@ -502,7 +558,7 @@ export default {
         moveObject(object, dx, dy) {
             object.x += dx;
             object.y += dy;
-            if (object.type === 'line' && object.path) {
+            if (object.type === 'pencil' && object.path) {
                 object.path.forEach((point) => {
                     point.x += dx;
                     point.y += dy;
