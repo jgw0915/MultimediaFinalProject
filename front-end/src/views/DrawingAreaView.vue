@@ -250,7 +250,7 @@ export default {
 
                 // 調整物件內容
                 this.scaleObjectContent(object, scaleX, scaleY);
-            }else if (object.type === 'line') {
+            } else if (object.type === 'line') {
                 if (this.resizeHandleIndex === 0) {
                     // 調整起始點
                     object.x = x;
@@ -427,7 +427,7 @@ export default {
                 const height = parseInt(object.font, 10); // 從字體大小獲取高度
                 this.ctx.strokeRect(object.x, object.y - height, width, height);
                 this.drawCornerHandles({ ...object, width, height }); // 處理文字大小
-            }else if (object.type === 'line') {
+            } else if (object.type === 'line') {
                 // 繪製線條的起始點和終點的白點
                 this.ctx.fillStyle = 'white';
                 this.ctx.strokeStyle = 'black';
@@ -710,6 +710,8 @@ export default {
             }
 
             let newPictureUrl = '';
+
+            this.addWatermark();
 
             try {
                 // 將 canvas 轉換為 blob
