@@ -170,7 +170,55 @@ export default {
             this.currentLine.push({ x, y }); // 记录当前线条的坐标
         },
         eraseAt(x, y) {
+            // 清除畫布指定位置的像素
             this.ctx.clearRect(x - 5, y - 5, 10, 10);
+
+            // 遍歷 objects 列表，檢查是否有物件被橡皮擦碰到
+            this.objects = this.objects.filter(object => {
+                if (object.type === 'rectangle') {
+                    // 矩形物件的碰撞檢測
+                    return !(x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height);
+                } else if (object.type === 'circle') {
+                    // 圓形物件的碰撞檢測
+                    const dx = x - object.x;
+                    const dy = y - object.y;
+                    return dx * dx + dy * dy > object.radius * object.radius;
+                } else if (object.type === 'line') {
+                    // 線條物件的碰撞檢測
+                    const distance = this.getDistanceToLineSegment(
+                        { x: object.x, y: object.y },
+                        { x: object.x2, y: object.y2 },
+                        { x, y }
+                    );
+                    return distance > 5; // 判斷是否橡皮擦與線條相交
+                } else if (object.type === 'text') {
+                    // 文字物件的碰撞檢測
+                    this.ctx.font = object.font;
+                    const metrics = this.ctx.measureText(object.text);
+                    const width = metrics.width;
+                    const height = parseInt(object.font, 10); // 提取文字高度
+                    return !(x >= object.x && x <= object.x + width && y >= object.y - height && y <= object.y);
+                } else if (object.type === 'image') {
+                    // 圖片物件的碰撞檢測
+                    return !(x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height);
+                }else if (object.type === 'pencil') {
+                    // Pencil 物件的碰撞檢測
+                    return !object.path.some((point, index) => {
+                        if (index === 0) return false; // 第一個點無法形成線段
+                        const prevPoint = object.path[index - 1];
+                        const distance = this.getDistanceToLineSegment(
+                            { x: prevPoint.x, y: prevPoint.y },
+                            { x: point.x, y: point.y },
+                            { x, y }
+                        );
+                        return distance <= 5; // 判斷橡皮擦是否接近線段
+                    });
+                }
+                return true; // 預設保留其他未知類型的物件
+            });
+
+            // 重新繪製畫布
+            this.redrawCanvas();
         },
         resizeObject(x, y) {
             if (this.selectedObject.type === 'rectangle') {
@@ -261,6 +309,31 @@ export default {
                     object.y2 = y;
                 }
                 this.redrawCanvas();
+            }else if (object.type === 'text') {
+                // 文字的縮放
+                console.log('object.font = '+object.font);
+                const initialFontSize = parseInt(object.font, 10);
+
+                if (this.resizeHandleIndex === 0 || this.resizeHandleIndex === 2) { // 左邊縮放
+                    object.x = x;
+                }
+                if (this.resizeHandleIndex === 1 || this.resizeHandleIndex === 3) { // 右邊縮放
+                    object.width = x - object.x;
+                }
+                if (this.resizeHandleIndex === 0 || this.resizeHandleIndex === 1) { // 上邊縮放
+                    object.y = y + initialFontSize;
+                }
+                if (this.resizeHandleIndex === 2 || this.resizeHandleIndex === 3) { // 下邊縮放
+                    object.height = y - object.y;
+                }
+
+                const scaleFactor = Math.min(
+                    Math.abs(object.width / (object.text.length * initialFontSize)),
+                    Math.abs(object.height / initialFontSize)
+                );
+
+                const newFontSize = Math.max(10,initialFontSize * scaleFactor); // 防止文字過小
+                object.font = `${newFontSize}px Arial`;
             }
 
             // 防止縮放到負值
@@ -422,11 +495,38 @@ export default {
                 this.drawCornerHandles(object);
             }
             else if (object.type === 'text') {
+                // 獲取文字的寬度和高度
+                this.ctx.font = object.font;
                 const metrics = this.ctx.measureText(object.text);
-                const width = metrics.width;
-                const height = parseInt(object.font, 10); // 從字體大小獲取高度
-                this.ctx.strokeRect(object.x, object.y - height, width, height);
-                this.drawCornerHandles({ ...object, width, height }); // 處理文字大小
+                const textWidth = metrics.width;
+                const fontSize = parseInt(object.font, 10); // 從字體大小中解析高度
+
+                // 設定選取框的外圍
+                const padding = 5; // 增加選取框的額外間距
+                const startX = object.x - padding;
+                const startY = object.y - fontSize - padding; // 注意文字的基準線位置
+                const width = textWidth + 2 * padding;
+                const height = fontSize + 2 * padding;
+
+                // 繪製選取框
+                this.ctx.strokeRect(startX, startY, width, height);
+
+                // 繪製角落的調整點
+                const corners = [
+                    { x: startX, y: startY }, // 左上角
+                    { x: startX + width, y: startY }, // 右上角
+                    { x: startX, y: startY + height }, // 左下角
+                    { x: startX + width, y: startY + height }, // 右下角
+                ];
+
+                this.ctx.fillStyle = 'white';
+                this.ctx.strokeStyle = 'black';
+                corners.forEach(corner => {
+                    this.ctx.beginPath();
+                    this.ctx.arc(corner.x, corner.y, 5, 0, Math.PI * 2); // 半徑為 5 的白點
+                    this.ctx.fill();
+                    this.ctx.stroke();
+                });
             } else if (object.type === 'line') {
                 // 繪製線條的起始點和終點的白點
                 this.ctx.fillStyle = 'white';
@@ -527,35 +627,60 @@ export default {
             return Math.sqrt((px - projectionX) ** 2 + (py - projectionY) ** 2);
         },
         isOverResizeHandle(x, y, object) {
-            const radius = 5;
+            const radius = 5; // 角點的檢測半徑
+            let corners = [];
 
             if (object.type === 'line') {
-                // 檢查是否點擊到起始點
-                const dx1 = x - object.x;
-                const dy1 = y - object.y;
+                // 處理線條的起始點和終點
+                const startPoint = { x: object.x, y: object.y };
+                const endPoint = { x: object.x2, y: object.y2 };
+
+                const dx1 = x - startPoint.x;
+                const dy1 = y - startPoint.y;
                 if (dx1 * dx1 + dy1 * dy1 <= radius * radius) {
-                    return 0; // 起始點索引
+                    return 0; // 起始點的索引
                 }
 
-                // 檢查是否點擊到終點
-                const dx2 = x - object.x2;
-                const dy2 = y - object.y2;
+                const dx2 = x - endPoint.x;
+                const dy2 = y - endPoint.y;
                 if (dx2 * dx2 + dy2 * dy2 <= radius * radius) {
-                    return 1; // 終點索引
+                    return 1; // 終點的索引
                 }
-            }
-            const corners = [
-                { x: object.x, y: object.y }, // 左上角
-                { x: object.x + object.width, y: object.y }, // 右上角
-                { x: object.x, y: object.y + object.height }, // 左下角
-                { x: object.x + object.width, y: object.y + object.height }, // 右下角
-            ];
+                return -1; // 未點中角點
+            } else if (object.type === 'text') {
+                // 處理文字的外框角點
+                const padding = 5; // 文字選取框的額外間距
+                this.ctx.font = object.font;
+                const metrics = this.ctx.measureText(object.text);
+                const textWidth = metrics.width;
+                const fontSize = parseInt(object.font, 10);
 
-            const handleRadius = 5; // 白点的半径
+                const startX = object.x - padding;
+                const startY = object.y - fontSize - padding;
+                const width = textWidth + 2 * padding;
+                const height = fontSize + 2 * padding;
+
+                corners = [
+                    { x: startX, y: startY }, // 左上角
+                    { x: startX + width, y: startY }, // 右上角
+                    { x: startX, y: startY + height }, // 左下角
+                    { x: startX + width, y: startY + height }, // 右下角
+                ];
+            } else {
+                // 處理其他矩形類型的物件（如矩形或圖片）
+                corners = [
+                    { x: object.x, y: object.y }, // 左上角
+                    { x: object.x + object.width, y: object.y }, // 右上角
+                    { x: object.x, y: object.y + object.height }, // 左下角
+                    { x: object.x + object.width, y: object.y + object.height }, // 右下角
+                ];
+            }
+
+            // 檢測滑鼠是否點中角點
             return corners.findIndex(corner => {
                 const dx = x - corner.x;
                 const dy = y - corner.y;
-                return dx * dx + dy * dy <= handleRadius * handleRadius;
+                return dx * dx + dy * dy <= radius * radius;
             });
         },
         addText() {
@@ -570,6 +695,7 @@ export default {
                     text,
                     color: this.selectedColor,
                     font: '20px Arial',
+                    fontSize: 20,
                 };
                 this.objects.push(newText);
                 this.redrawCanvas();
