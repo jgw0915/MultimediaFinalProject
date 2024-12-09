@@ -13,6 +13,7 @@
                 <button @click="addText">🔤 Add Text</button>
                 <button @click="selectTool('selector')">👆 Selector</button>
                 <button @click="addWatermark">🌊 Add Watermark</button>
+                <button @click="extractWatermark">🕵️ Extract Watermark</button>
             </div>
 
             <div class="shape-buttons">
@@ -560,32 +561,65 @@ export default {
             }
         },
         addWatermark() {
-            const watermarkText = prompt("請輸入浮水印文字：", "Watermark"); // 提供彈窗讓用戶輸入浮水印文字
+            const watermarkText = prompt("請輸入浮水印文字：", "InvisibleWatermark");
             if (watermarkText) {
-                const fontSize = 40;
-                this.ctx.font = `${fontSize}px Arial`;
-                this.ctx.fillStyle = "rgba(175, 175, 175, 0.5)";
-                this.ctx.textAlign = "right";
-                this.ctx.textBaseline = "bottom";
+                const canvasData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+                const pixels = canvasData.data;
 
-                // 計算浮水印文字的位置（右下角）
-                const x = this.canvas.width - 10; // 右邊留 10px
-                const y = this.canvas.height - 10; // 底部留 10px
+                // 將浮水印文字轉為位元資料
+                const watermarkBits = watermarkText
+                    .split("")
+                    .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
+                    .join("");
 
-                // 在畫布上繪製浮水印文字
-                this.ctx.fillText(watermarkText, x, y);
+                // 將浮水印長度也嵌入畫布（使用 32 位表示）
+                const lengthBits = watermarkBits.length.toString(2).padStart(32, "0");
 
-                // 將浮水印作為物件保存
-                const watermarkObject = {
-                    type: "text",
-                    x,
-                    y: y - fontSize, // 浮水印的頂部位置
-                    text: watermarkText,
-                    color: "rgba(0, 0, 0, 0.5)",
-                    font: `${fontSize}px Arial`,
-                };
-                this.objects.push(watermarkObject);
+                // 將長度位元和浮水印位元組合
+                const fullBits = lengthBits + watermarkBits;
+
+                // 嵌入位元到畫布像素的紅色通道
+                let bitIndex = 0;
+                for (let i = 0; i < pixels.length; i += 4) {
+                    if (bitIndex < fullBits.length) {
+                        pixels[i] = (pixels[i] & 0xfe) | parseInt(fullBits[bitIndex], 10); // 僅修改紅色通道的最低位
+                        bitIndex++;
+                    } else {
+                        break;
+                    }
+                }
+
+                // 更新畫布資料
+                this.ctx.putImageData(canvasData, 0, 0);
+                alert("不可見浮水印已成功嵌入！");
             }
+        },
+        extractWatermark() {
+            const canvasData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
+            const pixels = canvasData.data;
+
+            // 提取前 32 位作為長度信息
+            let lengthBits = "";
+            for (let i = 0; i < 32; i++) {
+                lengthBits += pixels[i * 4] & 1; // 提取紅色通道的最低位
+            }
+
+            const watermarkLength = parseInt(lengthBits, 2); // 將長度位元轉換為數字
+
+            // 根據長度提取浮水印位元
+            let watermarkBits = "";
+            for (let i = 0; i < watermarkLength; i++) {
+                watermarkBits += pixels[(i + 32) * 4] & 1; // 跳過長度信息的位元
+            }
+
+            // 將位元組合為文字
+            let watermarkText = "";
+            for (let i = 0; i < watermarkBits.length; i += 8) {
+                const byte = watermarkBits.slice(i, i + 8);
+                watermarkText += String.fromCharCode(parseInt(byte, 2));
+            }
+
+            alert(`提取的浮水印內容：${watermarkText}`);
         },
         downloadCanvas() {
             const link = document.createElement('a');
@@ -682,17 +716,35 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+body {
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f9f9f9;
+    color: #333;
+}
+
 .drawing-app {
     display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     gap: 20px;
-    font-family: Arial, sans-serif;
+    padding: 20px;
 }
 
 .canvas-container {
-    border: 2px solid #000;
+    border: 2px dashed #aaa;
+    background-color: #fff;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-radius: 8px;
     width: 800px;
     height: 600px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
 }
 
 .drawing-canvas {
@@ -704,37 +756,70 @@ export default {
 .tools {
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    align-items: flex-start;
+    gap: 20px;
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
 .tool-buttons,
 .shape-buttons {
     display: flex;
     gap: 10px;
+    flex-wrap: wrap;
+}
+
+button {
+    background-color: #007bff;
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 10px 15px;
+    font-size: 14px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+button:active {
+    background-color: #003f7f;
+    transform: translateY(1px);
 }
 
 .colors {
     display: grid;
-    grid-template-columns: repeat(4, 30px);
-    gap: 5px;
-    margin-top: 10px;
+    grid-template-columns: repeat(4, 40px);
+    gap: 10px;
 }
 
 .color {
-    width: 30px;
-    height: 30px;
+    width: 40px;
+    height: 40px;
     border-radius: 50%;
     cursor: pointer;
-    border: 1px solid #ccc;
+    border: 2px solid transparent;
+    transition: border 0.2s ease;
+}
+
+.color:hover {
+    border-color: #000;
 }
 
 .post-area {
     flex: 1;
     padding: 20px;
     max-width: 600px;
-    margin-left: 20px;
     background-color: #fff;
-    /* Background for AddPostView area */
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-top: 20px;
 }
 
 .inputBox {
@@ -743,28 +828,62 @@ export default {
 }
 
 .inputBox textarea {
-    width: 350px;
-    height: 275px;
-    background-color: rgba(255, 255, 255, 0.8);
-    border: 2px solid black;
-    border-radius: 10px;
-    padding: 15px;
+    width: 100%;
+    height: 150px;
+    background-color: rgba(255, 255, 255, 0.9);
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    padding: 10px;
     font-size: 16px;
     color: #333;
     outline: none;
     resize: none;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.inputBox textarea:focus {
+    border-color: #007bff;
+    box-shadow: inset 0 2px 4px rgba(0, 123, 255, 0.3);
 }
 
 .inputBox textarea::placeholder {
     color: #aaa;
 }
 
+button.download {
+    background-color: #28a745;
+    color: #fff;
+}
+
+button.download:hover {
+    background-color: #218838;
+}
+
+button.download:active {
+    background-color: #1e7e34;
+}
+
+button.button {
+    background-color: #17a2b8;
+    color: #fff;
+}
+
+button.button:hover {
+    background-color: #138496;
+}
+
+button.button:active {
+    background-color: #0f6674;
+}
+
 .title-box {
     border: 2px solid black;
-    /* Black border */
     padding: 10px;
-    /* Padding inside the box */
-    display: inline-block;
-    /* Ensure the box fits the content */
+    border-radius: 8px;
+    background-color: #fff;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    font-weight: bold;
+    font-size: 18px;
 }
 </style>
