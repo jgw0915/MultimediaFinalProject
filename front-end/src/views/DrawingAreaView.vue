@@ -186,52 +186,92 @@ export default {
         resizeSelectedObject(x, y) {
             const object = this.selectedObject;
 
-            const initialWidth = object.width || 1; // 确保 width 不为 0
-            const initialHeight = object.height || 1;
+            if (object.type === 'circle') {
+                // 如果是圓形，調整半徑
+                const dx = x - object.x;
+                const dy = y - object.y;
+                object.radius = Math.sqrt(dx * dx + dy * dy); // 根據鼠標位置調整半徑
+            } else if (object.type === 'rectangle' || object.type === 'image' || object.type === 'line') {
+                const initialWidth = object.width || 1; // 確保 width 不為 0
+                const initialHeight = object.height || 1;
 
-            // 根据调整点索引改变对象的大小
-            if (this.resizeHandleIndex === 0) { // 左上角
-                const dx = object.x - x;
-                const dy = object.y - y;
+                // 根據調整點索引改變物件的大小
+                if (this.resizeHandleIndex === 0) { // 左上角
+                    const dx = object.x - x;
+                    const dy = object.y - y;
 
-                object.x = x;
-                object.y = y;
-                object.width += dx;
-                object.height += dy;
-            } else if (this.resizeHandleIndex === 1) { // 右上角
-                const dy = object.y - y;
+                    object.x = x;
+                    object.y = y;
+                    object.width += dx;
+                    object.height += dy;
+                } else if (this.resizeHandleIndex === 1) { // 右上角
+                    const dy = object.y - y;
 
-                object.y = y;
-                object.width = x - object.x;
-                object.height += dy;
-            } else if (this.resizeHandleIndex === 2) { // 左下角
-                const dx = object.x - x;
+                    object.y = y;
+                    object.width = x - object.x;
+                    object.height += dy;
+                } else if (this.resizeHandleIndex === 2) { // 左下角
+                    const dx = object.x - x;
 
-                object.x = x;
-                object.width += dx;
-                object.height = y - object.y;
-            } else if (this.resizeHandleIndex === 3) { // 右下角
-                object.width = x - object.x;
-                object.height = y - object.y;
+                    object.x = x;
+                    object.width += dx;
+                    object.height = y - object.y;
+                } else if (this.resizeHandleIndex === 3) { // 右下角
+                    object.width = x - object.x;
+                    object.height = y - object.y;
+                }
+
+                // 如果寬度為負，調整 X 座標，鏡像顯示
+                if (object.width < 0) {
+                    object.width = Math.abs(object.width);
+                    object.x -= object.width;
+                    this.mirrorObject(object, 'horizontal'); // 水平鏡像
+                }
+
+                // 如果高度為負，調整 Y 座標，鏡像顯示
+                if (object.height < 0) {
+                    object.height = Math.abs(object.height);
+                    object.y -= object.height;
+                    this.mirrorObject(object, 'vertical'); // 垂直鏡像
+                }
+
+                const scaleX = object.width / initialWidth;
+                const scaleY = object.height / initialHeight;
+
+                // 調整物件內容
+                this.scaleObjectContent(object, scaleX, scaleY);
             }
 
-            // 防止宽度和高度为负值
-            if (object.width < 0) {
-                object.width = Math.abs(object.width);
-                object.x -= object.width;
-            }
-            if (object.height < 0) {
-                object.height = Math.abs(object.height);
-                object.y -= object.height;
+            // 防止縮放到負值
+            if (object.radius < 0) {
+                object.radius = 0;
             }
 
-            const scaleX = object.width / initialWidth;
-            const scaleY = object.height / initialHeight;
-
-            // 调整对象内容
-            this.scaleObjectContent(object, scaleX, scaleY);
-
+            // 更新物件並重繪畫布
             this.redrawCanvas();
+        },
+        mirrorObject(object, direction) {
+            if (direction === 'horizontal') {
+                // 水平鏡像：對 X 軸進行翻轉
+                if (object.type === 'rectangle' || object.type === 'image') {
+                    // 矩形和圖片：無需額外處理，座標已調整
+                } else if (object.type === 'line') {
+                    // 線條：反轉 x1 和 x2
+                    const x2 = object.x + object.width;
+                    object.x = x2;
+                    object.width = -object.width;
+                }
+            } else if (direction === 'vertical') {
+                // 垂直鏡像：對 Y 軸進行翻轉
+                if (object.type === 'rectangle' || object.type === 'image') {
+                    // 矩形和圖片：無需額外處理，座標已調整
+                } else if (object.type === 'line') {
+                    // 線條：反轉 y1 和 y2
+                    const y2 = object.y + object.height;
+                    object.y = y2;
+                    object.height = -object.height;
+                }
+            }
         },
         scaleObjectContent(object, scaleX, scaleY) {
             if (object.type === 'rectangle' || object.type === 'image') {
@@ -353,51 +393,57 @@ export default {
             this.ctx.strokeStyle = 'blue';
             this.ctx.lineWidth = 2;
 
-            // 绘制选取框
-            if (object.type === 'rectangle' || object.type === 'image') {
+            // 這裡將圓形的選取框替換為正方形，大小為圓的直徑
+            if (object.type === 'circle') {
+                const sideLength = object.radius * 2; // 計算正方形的邊長，等於圓的直徑
+                const topLeftX = object.x - object.radius;
+                const topLeftY = object.y - object.radius;
+
+                // 繪製正方形選取框
+                this.ctx.strokeRect(topLeftX, topLeftY, sideLength, sideLength);
+                this.drawCornerHandles(object); // 繪製角落的調整點
+            }
+            // 如果是其他物件類型，保留原有邏輯
+            else if (object.type === 'rectangle' || object.type === 'image') {
                 this.ctx.strokeRect(object.x, object.y, object.width, object.height);
                 this.drawCornerHandles(object);
-            } else if (object.type === 'circle') {
-                this.ctx.beginPath();
-                this.ctx.arc(object.x, object.y, object.radius, 0, Math.PI * 2);
-                this.ctx.stroke();
-                this.drawCornerHandles(object); // 为圆心添加调整点
-            } else if (object.type === 'line') {
+            }
+            else if (object.type === 'line') {
                 this.ctx.strokeRect(object.x, object.y, object.width, object.height);
                 this.drawCornerHandles(object);
-            } else if (object.type === 'text') {
+            }
+            else if (object.type === 'text') {
                 const metrics = this.ctx.measureText(object.text);
                 const width = metrics.width;
-                const height = parseInt(object.font, 10); // 从字体提取高度
+                const height = parseInt(object.font, 10); // 從字體大小獲取高度
                 this.ctx.strokeRect(object.x, object.y - height, width, height);
-                this.drawCornerHandles({ ...object, width, height }); // 处理文字大小
+                this.drawCornerHandles({ ...object, width, height }); // 處理文字大小
             }
         },
         drawCornerHandles(object) {
-            const corners = [
-                { x: object.x, y: object.y }, // 左上角
-                { x: object.x + object.width, y: object.y }, // 右上角
-                { x: object.x, y: object.y + object.height }, // 左下角
-                { x: object.x + object.width, y: object.y + object.height }, // 右下角
-            ];
+            let corners = [];
+
+            // 如果是圓形，我們將根據圓心來定位正方形的角落
+            if (object.type === 'circle') {
+                corners = [{ x: object.x, y: object.y }];
+            } else {
+                // 原本的處理邏輯
+                corners = [
+                    { x: object.x, y: object.y }, // 左上角
+                    { x: object.x + object.width, y: object.y }, // 右上角
+                    { x: object.x, y: object.y + object.height }, // 左下角
+                    { x: object.x + object.width, y: object.y + object.height }, // 右下角
+                ];
+            }
 
             this.ctx.fillStyle = 'white';
             this.ctx.strokeStyle = 'black';
             corners.forEach(corner => {
                 this.ctx.beginPath();
-                this.ctx.arc(corner.x, corner.y, 5, 0, Math.PI * 2); // 半径为5的白点
+                this.ctx.arc(corner.x, corner.y, 5, 0, Math.PI * 2); // 半徑為 5 的白點
                 this.ctx.fill();
                 this.ctx.stroke();
             });
-        },
-        drawResizeHandle(x, y) {
-            this.ctx.fillStyle = 'red';
-            this.ctx.fillRect(
-                x - this.resizeHandleSize / 2,
-                y - this.resizeHandleSize / 2,
-                this.resizeHandleSize,
-                this.resizeHandleSize
-            );
         },
         isInsideObject(x, y, object) {
             if (object.type === 'rectangle') {
