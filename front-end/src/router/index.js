@@ -9,10 +9,11 @@ import DrawingAreaView from '../views/DrawingAreaView.vue'
 import UserFeedbackView from '../views/UserFeedbackView.vue'
 import AddPostView from '../views/AddPostView.vue'
 import EditPostView from '../views/EditPostView.vue'
+import testVuew from '../views/testVuew.vue'
 
 const routes = [
   {
-    path: '/login',
+    path: '/',
     name: 'login',
     component: LoginView
   },
@@ -37,7 +38,7 @@ const routes = [
     component: ProfileView
   },
   {
-    path: '/',
+    path: '/home',
     name: 'home',
     component: HomeView
   },

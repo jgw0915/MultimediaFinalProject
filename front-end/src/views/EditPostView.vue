@@ -16,7 +16,7 @@
             </div>
             <button type="submit">Save Changes</button>
         </form>
-        <button @click="$router.push('/')" type="button">Cancel</button>
+        <button @click="$router.push('/home')" type="button">Cancel</button>
     </div>
 </template>
 

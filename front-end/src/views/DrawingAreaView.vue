@@ -12,7 +12,7 @@
                 <button @click="selectTool('eraser')">🧹 Eraser</button>
                 <button @click="addText">🔤 Add Text</button>
                 <button @click="selectTool('selector')">👆 Selector</button>
-                <button @click="addWatermark">🌊 Add Watermark</button>
+                <!-- <button @click="addWatermark">🌊 Add Watermark</button> -->
                 <button @click="extractWatermark">🕵️ Extract Watermark</button>
             </div>
 
@@ -152,7 +152,7 @@ export default {
                 this.selectedObject.x2 = x;
                 this.selectedObject.y2 = y;
                 this.redrawCanvas();
-            }else if (this.drawing && this.selectedObject) {
+            } else if (this.drawing && this.selectedObject) {
                 this.resizeObject(x, y);
             } else if (this.tool === 'selector') {
                 if (this.isDragging && this.selectedObject) {
@@ -201,7 +201,7 @@ export default {
                 } else if (object.type === 'image') {
                     // 圖片物件的碰撞檢測
                     return !(x >= object.x && x <= object.x + object.width && y >= object.y && y <= object.y + object.height);
-                }else if (object.type === 'pencil') {
+                } else if (object.type === 'pencil') {
                     // Pencil 物件的碰撞檢測
                     return !object.path.some((point, index) => {
                         if (index === 0) return false; // 第一個點無法形成線段
@@ -309,9 +309,9 @@ export default {
                     object.y2 = y;
                 }
                 this.redrawCanvas();
-            }else if (object.type === 'text') {
+            } else if (object.type === 'text') {
                 // 文字的縮放
-                console.log('object.font = '+object.font);
+                console.log('object.font = ' + object.font);
                 const initialFontSize = parseInt(object.font, 10);
 
                 if (this.resizeHandleIndex === 0 || this.resizeHandleIndex === 2) { // 左邊縮放
@@ -332,7 +332,7 @@ export default {
                     Math.abs(object.height / initialFontSize)
                 );
 
-                const newFontSize = Math.max(10,initialFontSize * scaleFactor); // 防止文字過小
+                const newFontSize = Math.max(10, initialFontSize * scaleFactor); // 防止文字過小
                 object.font = `${newFontSize}px Arial`;
             }
 
@@ -458,7 +458,7 @@ export default {
                         object.height
                     );
                 }
-            }else if (object.type === 'pencil' && object.path) {
+            } else if (object.type === 'pencil' && object.path) {
                 // 繪製線條
                 this.ctx.beginPath();
                 object.path.forEach((point, index) => {
@@ -733,95 +733,80 @@ export default {
             if (file) {
                 const img = new Image();
                 img.onload = () => {
-                    // 获取图片的实际宽高
                     const imgWidth = img.width;
                     const imgHeight = img.height;
 
-                    // 在 canvas 上绘制图片
                     this.ctx.drawImage(img, 0, 0, imgWidth, imgHeight);
                     console.log('Image loaded:', img);
 
-                    // 将图片对象存入 objects 数组
                     const imageObject = {
                         type: 'image',
                         x: 0,
                         y: 0,
                         width: imgWidth,
                         height: imgHeight,
-                        img: img, // 保存图片实例
+                        img: img,
                     };
                     this.objects.push(imageObject);
-                    // 重新绘制画布
                     this.redrawCanvas();
                 };
 
-                // 确保文件 URL 被正确加载
                 img.src = URL.createObjectURL(file);
 
-                // 打印日志以确认加载
                 console.log('Image loading started:', file.name);
             }
         },
         addWatermark() {
-            const watermarkText = prompt("請輸入浮水印文字：", "InvisibleWatermark");
+            const watermarkText = prompt("Please enter watermark text：", "InvisibleWatermark");
             if (watermarkText) {
                 const canvasData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
                 const pixels = canvasData.data;
 
-                // 將浮水印文字轉為位元資料
                 const watermarkBits = watermarkText
                     .split("")
                     .map((char) => char.charCodeAt(0).toString(2).padStart(8, "0"))
                     .join("");
 
-                // 將浮水印長度也嵌入畫布（使用 32 位表示）
                 const lengthBits = watermarkBits.length.toString(2).padStart(32, "0");
 
-                // 將長度位元和浮水印位元組合
                 const fullBits = lengthBits + watermarkBits;
 
-                // 嵌入位元到畫布像素的紅色通道
                 let bitIndex = 0;
                 for (let i = 0; i < pixels.length; i += 4) {
                     if (bitIndex < fullBits.length) {
-                        pixels[i] = (pixels[i] & 0xfe) | parseInt(fullBits[bitIndex], 10); // 僅修改紅色通道的最低位
+                        pixels[i] = (pixels[i] & 0xfe) | parseInt(fullBits[bitIndex], 10);
                         bitIndex++;
                     } else {
                         break;
                     }
                 }
 
-                // 更新畫布資料
                 this.ctx.putImageData(canvasData, 0, 0);
-                alert("不可見浮水印已成功嵌入！");
             }
         },
         extractWatermark() {
             const canvasData = this.ctx.getImageData(0, 0, this.canvas.width, this.canvas.height);
             const pixels = canvasData.data;
 
-            // 提取前 32 位作為長度信息
             let lengthBits = "";
             for (let i = 0; i < 32; i++) {
-                lengthBits += pixels[i * 4] & 1; // 提取紅色通道的最低位
+                lengthBits += pixels[i * 4] & 1;
             }
 
-            const watermarkLength = parseInt(lengthBits, 2); // 將長度位元轉換為數字
+            const watermarkLength = parseInt(lengthBits, 2);
 
-            // 根據長度提取浮水印位元
             let watermarkBits = "";
             for (let i = 0; i < watermarkLength; i++) {
-                watermarkBits += pixels[(i + 32) * 4] & 1; // 跳過長度信息的位元
+                watermarkBits += pixels[(i + 32) * 4] & 1;
             }
 
-            // 將位元組合為文字
             let watermarkText = "";
             for (let i = 0; i < watermarkBits.length; i += 8) {
                 const byte = watermarkBits.slice(i, i + 8);
                 watermarkText += String.fromCharCode(parseInt(byte, 2));
             }
 
-            alert(`提取的浮水印內容：${watermarkText}`);
+            alert(`${watermarkText}`);
         },
         downloadCanvas() {
             const link = document.createElement('a');
@@ -1075,9 +1060,10 @@ button.button {
 
 button.button:hover {
     background-color: #138496;
+    background-color: rgba(201, 150, 100, 0.9);
 }
 
-button.button:active {
+A button.button:active {
     background-color: #0f6674;
 }
 

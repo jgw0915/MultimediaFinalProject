@@ -54,7 +54,7 @@ export default {
             alert("User logged in successfully!");
             localStorage.setItem('userEmail', this.email);
             localStorage.setItem('isLogin', true);
-            this.$router.push('/');
+            this.$router.push('/home');
           } else {
             console.error("Login failed:", data);
           }

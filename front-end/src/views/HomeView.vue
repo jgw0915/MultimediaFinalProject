@@ -47,8 +47,8 @@
                 <div class="comment-actions">
                   <button @click="likeComment(post.id, comment, commentIndex)">Like ({{ comment.likes
                     }})</button>
-                  <button @click="toggleReplies(comment.id, post.id)">Reply ({{ comment.replies.length
-                    }})</button>
+                  <!-- <button @click="toggleReplies(comment.id, post.id)">Reply ({{ comment.replies.length
+                    }})</button> -->
                 </div>
                 <div class="add-reply">
                   <input v-model="post.replyInput[commentIndex]" type="text" placeholder="Write a reply..." />
