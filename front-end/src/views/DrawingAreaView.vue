@@ -880,7 +880,7 @@ export default {
                     alert('貼文已成功發佈！');
                     console.log('伺服器返回：', result);
                     this.resetForm();
-                    this.$router.push('/');
+                    this.$router.push('/home');
                 } else {
                     const errorMessage = await postResponse.text();
                     console.error('貼文發佈失敗：', errorMessage);

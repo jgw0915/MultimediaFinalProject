@@ -84,7 +84,7 @@ export default {
 
                 if (response.ok) {
                     alert('Post updated successfully!');
-                    this.$router.push('/');
+                    this.$router.push('/home');
                 } else {
                     const errorMessage = await response.text();
                     alert(`Failed to update post: ${errorMessage}`);
