@@ -1,9 +1,0 @@
-Mongo DB API:
-	Public Key: kfhfqqam
-	Private Key: 6784d33d-1964-4053-bfe1-ad33e7990a96
-Mongo DB User:
-	User Name : kiwi
-	Password : !!abcd1234
-Mongo DB IP Address: 180.217.230.215
-Mongo DB Connection String:
-	mongodb+srv://kiwi:<db_password>@cluster0.brk12j0.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0
